@@ -1,0 +1,27 @@
+function weight_indices(m)
+    pos, inds = 0, Vector{Int}[]
+    for (name, p) in namedparams(m)
+        if ndims(p) == 2
+            @assert contains(lowercase(string(name)), "w")
+            ind = eachrow(reshape(linearindices(p) + pos, size(p)))
+            append!(inds, ind)
+        end
+        pos += length(p)
+    end
+    return inds
+end
+
+parameters_to_vector(ps) = vcat(vec.(Flux.data.(ps))...)
+
+function vector_to_parameters!(ps, x)
+    pos = 1
+    for p in ps
+        pos_end = pos + length(p) - 1
+        copy!(p.data, x[pos:pos_end])
+        pos = pos_end + 1
+    end
+end
+
+net2vec(m) = parameters_to_vector(Flux.params(m))
+
+vec2net!(m, x) = vector_to_parameters!(Flux.params(m), x)

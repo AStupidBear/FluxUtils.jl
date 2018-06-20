@@ -4,8 +4,7 @@ minibatch(x, batchsize) = Any[cview(x, ind) for ind in indbatch(x, batchsize)]
 
 minibatch(x, y, batchsize) = Any[(cview(x, ind), cview(y, ind)) for ind in indbatch(x, batchsize)]
 
-indbatchseq(x, b) = (T = ccount(x) ÷ b; t:T:T*b for t in 1:T)
-
-minibatchseq(x, batchsize) =  Any[cview(x, ind) for ind in indbatchseq(x, batchsize)]
-
-minibatchseq(x, y, batchsize) =  Any[(cview(x, ind), cview(y, ind)) for ind in indbatchseq(x, batchsize)]
+function batchtupleseq(Xs, batchsize, by = identity)
+    Xs′ = (by.(xs) for xs in minibatch(Xs, batchsize))
+    Xs′′ = ([cview(xs, i) for i in 1:ccount(xs)] for xs in Xs′)
+end
