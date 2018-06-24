@@ -5,13 +5,14 @@ module FluxUtils
 using Flux, BSON, Adapt, Utils, Requires
 
 export fσ, fsigmoid, ftanh, softσ, softsigmoid
-export indbatch, minibatch, batchtupleseq
+export indbatch, minibatch, tupseqbatch
 export FLSTM
 export forwardmode, float32
-export predict_seq, predict_batch
+export predseq, predseqbatch
 export namedparams
-export weight_indices, net2vec, vec2net!
+export weightindices, net2vec, vec2net!
 export savenet, loadnet!
+export gradseq, gradbatch
 
 include("math.jl")
 include("batch.jl")
@@ -24,5 +25,7 @@ include("predict.jl")
 include("namedparams.jl")
 include("vector.jl")
 include("io.jl")
+include("grad.jl")
+include("subarray.jl")
 
 end

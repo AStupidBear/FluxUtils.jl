@@ -1,4 +1,4 @@
-function weight_indices(m)
+function weightindices(m)
     pos, inds = 0, Vector{Int}[]
     for (name, p) in namedparams(m)
         if ndims(p) == 2
@@ -25,3 +25,7 @@ end
 net2vec(m) = parameters_to_vector(Flux.params(m))
 
 vec2net!(m, x) = vector_to_parameters!(Flux.params(m), x)
+
+parameters_to_grad(ps) = vcat(vec.(Tracker.grad.(ps))...)
+
+net2grad(m) = parameters_to_grad(Flux.params(m))
