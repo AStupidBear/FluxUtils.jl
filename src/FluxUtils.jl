@@ -2,7 +2,7 @@ __precompile__(true)
 
 module FluxUtils
 
-using Flux, BSON, Adapt, Utils, Requires
+using Flux, BSON, Adapt, Utils, Requires, Suppressor
 
 export fσ, fsigmoid, ftanh, softσ, softsigmoid
 export indbatch, minibatch, tupseqbatch
@@ -25,6 +25,7 @@ include("namedparams.jl")
 include("vector.jl")
 include("io.jl")
 include("grad.jl")
+include("mpi.jl")
 include("optimizer.jl")
 
 end
