@@ -1,6 +1,8 @@
 @require MPI begin
 
-function syncgrad(p::Flux.Optimise.Param)
+using Flux.Optimise: Param, call
+
+function syncgrad(p::Param)
     function ()
         recvbuf = zeros(p.Δ)
         MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
@@ -10,7 +12,7 @@ end
     
 function Flux.Optimise.optimiser(ps, fs...)
     fs = (syncgrad, fs...)
-    ps = [Flux.Optimise.Param(p) for p in ps]
+    ps = [Param(p) for p in ps]
     fs = map(ps) do p
         os = map(f -> f(p), fs)
         () -> foreach(call, os)
