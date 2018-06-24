@@ -27,7 +27,7 @@ function Flux.Optimise.nesterov(p::Param, ρ, η)
   end
 end
 
-function Flux.Optimise.rmsprop(p::Param; η::Float32 = 0.001, ρ::Float32 = 0.9, ϵ::Float32 = 1e-8)
+function Flux.Optimise.rmsprop(p::Param; η::Float32 = 0.001f0, ρ::Float32 = 0.9f0, ϵ::Float32 = 1f-8)
   acc  = zeros(p.x)
   function ()
     @. acc = ρ * acc + (1 - ρ) * p.Δ^2
@@ -35,7 +35,7 @@ function Flux.Optimise.rmsprop(p::Param; η::Float32 = 0.001, ρ::Float32 = 0.9,
   end
 end
 
-function Flux.Optimise.adagrad(p::Param; η::Float32 = 0.01, ϵ::Float32 = 1e-8)
+function Flux.Optimise.adagrad(p::Param; η::Float32 = 0.01f0, ϵ::Float32 = 1f-8)
   acc = zeros(p.x) .+ ϵ
   function ()
     @. acc += p.Δ^2
@@ -43,7 +43,7 @@ function Flux.Optimise.adagrad(p::Param; η::Float32 = 0.01, ϵ::Float32 = 1e-8)
   end
 end
 
-function Flux.Optimise.adadelta(p::Param; ρ::Float32 = 0.9, ϵ::Float32 = 1e-8)
+function Flux.Optimise.adadelta(p::Param; ρ::Float32 = 0.9f0, ϵ::Float32 = 1f-8)
   acc = zeros(p.x)
   Δacc = zeros(p.x)
   function ()
@@ -53,7 +53,7 @@ function Flux.Optimise.adadelta(p::Param; ρ::Float32 = 0.9, ϵ::Float32 = 1e-8)
    end
 end
 
-function Flux.Optimise.adam(p::Param; η::Float32 = 0.001, β1::Float32 = 0.9, β2::Float32 = 0.999, ϵ::Float32 = 1e-8)
+function Flux.Optimise.adam(p::Param; η::Float32 = 0.001f0, β1::Float32 = 0.9f0, β2::Float32 = 0.999f0, ϵ::Float32 = 1f-8)
   mt = zeros(p.x)
   vt = zeros(p.x)
   β1p, β2p = β1, β2
@@ -66,7 +66,7 @@ function Flux.Optimise.adam(p::Param; η::Float32 = 0.001, β1::Float32 = 0.9, �
   end
 end
 
-function Flux.Optimise.adamax(p::Param; η::Float32 = 0.002, β1::Float32 = 0.9, β2::Float32 = 0.999, ϵ::Float32 = 1e-8)
+function Flux.Optimise.adamax(p::Param; η::Float32 = 0.002f0, β1::Float32 = 0.9f0, β2::Float32 = 0.999f0, ϵ::Float32 = 1f-8)
   mt = zeros(p.x)
   ut = zeros(p.x)
   β1p = β1
@@ -78,7 +78,7 @@ function Flux.Optimise.adamax(p::Param; η::Float32 = 0.002, β1::Float32 = 0.9,
   end
 end
 
-function Flux.Optimise.amsgrad(p::Param; η::Float32 = 0.001, β1::Float32 = 0.9, β2::Float32 = 0.999, ϵ::Float32 = 1e-8)
+function Flux.Optimise.amsgrad(p::Param; η::Float32 = 0.001f0, β1::Float32 = 0.9f0, β2::Float32 = 0.999f0, ϵ::Float32 = 1f-8)
   mt = zeros(p.x)
   vt = zeros(p.x) .+ ϵ
   v̂t = zeros(p.x) .+ ϵ
@@ -90,7 +90,7 @@ function Flux.Optimise.amsgrad(p::Param; η::Float32 = 0.001, β1::Float32 = 0.9
   end
 end
 
-function Flux.Optimise.nadam(p::Param; η::Float32 = 0.001, β1::Float32 = 0.9, β2::Float32 = 0.999, ϵ::Float32 = 1e-8)
+function Flux.Optimise.nadam(p::Param; η::Float32 = 0.001f0, β1::Float32 = 0.9f0, β2::Float32 = 0.999f0, ϵ::Float32 = 1f-8)
   mt = zeros(p.x)
   vt = zeros(p.x)
   β1p, β2p = β1, β2
