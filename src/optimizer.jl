@@ -1,6 +1,6 @@
 @require MPI begin
 
-function syncgrad(p::Param)
+function syncgrad(p::Flux.Optimise.Param)
     function ()
         recvbuf = zeros(p.Δ)
         MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
