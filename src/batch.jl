@@ -6,5 +6,5 @@ minibatch(x, y, batchsize) = Any[(cview(x, ind), cview(y, ind)) for ind in indba
 
 function tupseqbatch(Xs, batchsize, by = identity)
     Xs′ = (by.(xs) for xs in minibatch(Xs, batchsize))
-    Xs′′ = ([cview(xs, i) for i in 1:ccount(xs)] for xs in Xs′)
+    Xs′′ = ([gpu(cview(xs, i)) for i in 1:ccount(xs)] for xs in Xs′)
 end
