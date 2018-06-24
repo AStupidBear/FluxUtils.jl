@@ -25,5 +25,6 @@ include("namedparams.jl")
 include("vector.jl")
 include("io.jl")
 include("grad.jl")
+include("optimizer.jl")
 
 end
