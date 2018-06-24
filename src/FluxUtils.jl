@@ -26,6 +26,5 @@ include("namedparams.jl")
 include("vector.jl")
 include("io.jl")
 include("grad.jl")
-include("subarray.jl")
 
 end
