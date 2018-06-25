@@ -5,7 +5,7 @@ function loadnet!(m, file)
 end
 
 function savenet(m, file)
-    weights = Flux.data.(Flux.params(cpu(m)))
+    weights = Flux.data.(params(cpu(m)))
     BSON.@save file weights
     return nothing
 end
