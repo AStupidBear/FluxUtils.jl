@@ -12,7 +12,7 @@ export predseq, predseqbatch
 export namedparams
 export weightindices, net2vec, vec2net!
 export savenet, loadnet!
-export gradseq, gradbatch
+export gradseq, gradseqbatch, lossseqbatch
 
 include("math.jl")
 include("batch.jl")

@@ -13,9 +13,14 @@ function gradseq(m, loss, xs)
     return Δ
 end
 
-function gradbatch(m, loss, Xs)
-    Δs = [ccount(xs[1]) .* gradseq(m, loss, xs) for xs in Xs]
+function gradseqbatch(m, loss, Xs)
+    Δs = [ccount(first(xs)) .* gradseq(m, loss, xs) for xs in Xs]
     Δ = sum(Δs) ./ ccount(Xs)
     Flux.reset!(m)
     return Δ
+end
+
+function lossseqbatch(loss, Xs)
+    l = sum(Flux.data(loss(xs)) * length(xs) * ccount(first(xs)) for xs in Xs)
+    l /= sum(length(xs) * ccount(first(xs)) for xs in Xs)
 end
