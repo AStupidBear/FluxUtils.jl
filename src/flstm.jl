@@ -1,11 +1,11 @@
 using Flux: glorot_uniform, param, initn, gate, treelike, Recur
 
 mutable struct FLSTMCell{A,V}
-  Wi::A
-  Wh::A
-  b::V
-  h::V
-  c::V
+    Wi::A
+    Wh::A
+    b::V
+    h::V
+    c::V
 end
 
 function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform)
@@ -35,7 +35,7 @@ treelike(FLSTMCell)
 namedchildren(m::FLSTMCell) = zip(fieldnames(m), children(m))
 
 Base.show(io::IO, l::FLSTMCell) =
-  print(io, "FLSTMCell(", size(l.Wi, 2), ", ", size(l.Wi, 1)÷4, ")")
+    print(io, "FLSTMCell(", size(l.Wi, 2), ", ", size(l.Wi, 1)÷4, ")")
 
 FLSTM(a...; ka...) = Recur(FLSTMCell(a...; ka...))
 

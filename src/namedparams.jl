@@ -15,18 +15,18 @@ namedchildren(BN::BatchNorm) = zip((:λ, :β, :γ, :μ, :σ, :ϵ, :momentum, :ac
 
 
 function namedprefor(f, namedx; seen = OSet())
-  name, x = namedx
-  x ∈ seen && return
-  f(name, x)
-  foreach(namedy -> namedprefor(f, namedy, seen = seen), namedchildren(x))
-  return
+    name, x = namedx
+    x ∈ seen && return
+    f(name, x)
+    foreach(namedy -> namedprefor(f, namedy, seen = seen), namedchildren(x))
+    return
 end
 
 function namedparams(m)
   ps = Any[]
   namedprefor((name, p) ->
     Tracker.istracked(p) && Tracker.isleaf(p) &&
-      !any(p′ -> p′[2] === p, ps) && push!(ps, (name, p)),
+        !any(p′ -> p′[2] === p, ps) && push!(ps, (name, p)),
     (Symbol(typename(m)), m))
   return ps
 end

@@ -10,14 +10,14 @@ cugc() = gc()
 using Flux.Tracker: TrackedArray, track
 
 for f in [:vcat, :hcat]
-  @eval begin
-    Base.$f(a::TrackedArray, b::SubArray) = track($f, a, b)
-    Base.$f(a::SubArray, b::TrackedArray) = track($f, a, b)
-    @require CuArrays begin
-        Base.$f(a::TrackedArray, b::CuArrays.CuArray) = track($f, a, b)
-        Base.$f(a::CuArrays.CuArray, b::TrackedArray) = track($f, a, b)
+    @eval begin
+        Base.$f(a::TrackedArray, b::SubArray) = track($f, a, b)
+        Base.$f(a::SubArray, b::TrackedArray) = track($f, a, b)
+        @require CuArrays begin
+            Base.$f(a::TrackedArray, b::CuArrays.CuArray) = track($f, a, b)
+            Base.$f(a::CuArrays.CuArray, b::TrackedArray) = track($f, a, b)
+        end
     end
-  end
 end
 
 export vecnorm2
