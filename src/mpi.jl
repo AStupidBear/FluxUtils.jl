@@ -1,6 +1,10 @@
 using Flux.Optimise: Param, call
 
-@require MPI begin
+myrank() = myid() - 1
+
+worldsize() = nworkers()
+
+@require MPI @suppress begin
 
 myrank() = MPI.Comm_rank(MPI.COMM_WORLD)
 
