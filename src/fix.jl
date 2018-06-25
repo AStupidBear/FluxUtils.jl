@@ -19,3 +19,6 @@ for f in [:vcat, :hcat]
     end
   end
 end
+
+export vecnorm2
+vecnorm2(x::TrackedArray, p::Real = 2) = sqrt(sum(abs.(x).^2 .+ eps(0f0)))
