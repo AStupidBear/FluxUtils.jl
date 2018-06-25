@@ -24,6 +24,7 @@ function Flux.Optimise.train!(loss, data, opt; cb = () -> ())
   @progress for d in data
     l = loss(d...)
     @printf("rank: %d, loss: %.4f\n", myrank(), l)
+    flush(STDOUT)
     isinf(l) && error("Loss is Inf")
     isnan(l) && error("Loss is NaN")
     @interrupts back!(l)
