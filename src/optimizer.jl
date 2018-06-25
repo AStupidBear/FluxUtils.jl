@@ -1,12 +1,6 @@
 using Flux.Optimise: optimiser, invdecay, descent, momentum, rmsprop, adam, clip
 using Flux.Optimise: back!, runall, @progress, @interrupts
 
-function plog(name, val)
-    str = @sprintf("Rank: %d, %s: %.4f\n", myrank(), name, val)
-    print_with_color(:cyan, str)
-    flush(STDOUT)
-end
-
 @init @suppress begin
 
 Flux.Optimise.SGD(ps, η = 0.1f0; decay = 0, thresh = 0.5f0) =
@@ -39,7 +33,7 @@ function Flux.Optimise.train!(loss, data, opt; logintvl = 10, cb = () -> ())
         opt()
         cb() == :stop && break
     end
-    plog("TotalLoss", ltot)
+    plog("TotalLoss", ltot, :yellow)
 end
 
 end

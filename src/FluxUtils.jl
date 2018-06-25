@@ -14,7 +14,7 @@ export weightindices, net2vec, vec2net!
 export savenet, loadnet!
 export gradseq, gradseqbatch, lossseqbatch
 export myrank, worldsize
-export plog
+export plog, @pepochs
 
 include("math.jl")
 include("batch.jl")
