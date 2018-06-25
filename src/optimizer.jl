@@ -1,6 +1,12 @@
 using Flux.Optimise: optimiser, invdecay, descent, momentum, rmsprop, adam, clip
 using Flux.Optimise: back!, runall, @progress, @interrupts
 
+function plog(name, val)
+    str = @sprintf("Rank: %d, %s: %.4f\n", myrank(), name, val)
+    print_with_color(:cyan, str)
+    flush(STDOUT)
+end
+
 @init @suppress begin
 
 Flux.Optimise.SGD(ps, η = 0.1f0; decay = 0, thresh = 0.5f0) =
@@ -18,19 +24,22 @@ Flux.Optimise.ADAM(ps, η = 1f-3; β1 = 0.9f0, β2 = 0.999f0, ϵ = 1f-08, decay 
   optimiser(ps, p -> clip(p, thresh), p -> adam(p; η = η, β1 = β1, β2 = β2, ϵ = ϵ), 
                 p -> invdecay(p, decay), p -> descent(p, 1))
 
-function Flux.Optimise.train!(loss, data, opt; cb = () -> ())
-  cb = runall(cb)
-  opt = runall(opt)
-  @progress for d in data
-    l = loss(d...)
-    @printf("rank: %d, loss: %.4f\n", myrank(), l)
-    flush(STDOUT)
-    isinf(l) && error("Loss is Inf")
-    isnan(l) && error("Loss is NaN")
-    @interrupts back!(l)
-    opt()
-    cb() == :stop && break
-  end
+function Flux.Optimise.train!(loss, data, opt; logintvl = 10, cb = () -> ())
+    cb = runall(cb)
+    opt = runall(opt)
+    ltot = 0f0
+    logcb = throttle(plog, logintvl)
+    @progress for d in data
+        l = loss(d...)
+        ltot += Flux.data(l)
+        logcb("Loss", l)
+        isinf(l) && error("Loss is Inf")
+        isnan(l) && error("Loss is NaN")
+        @interrupts back!(l)
+        opt()
+        cb() == :stop && break
+    end
+    plog("TotalLoss", ltot)
 end
 
 end
