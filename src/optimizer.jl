@@ -33,7 +33,7 @@ function Flux.Optimise.train!(loss, data, opt; logintvl = 10, cb = () -> ())
         opt()
         cb() == :stop && break
     end
-    plog("TotalLoss", ltot, :yellow)
+    plog("AvgLoss", ltot / length(data), :yellow)
 end
 
 end
