@@ -1,8 +1,6 @@
 function predseq(m, xs, catseqdim)
     ys = m.(xs) # for y in ys, y: 1xB
-    zs = [cat(catseqdim, [Flux.data(cpu(ys[t][n])) 
-            for t in 1:length(ys)]...) 
-            for n in 1:length(first(ys))]
+    zs = [veccat(catseqdim, [Flux.data(cpu(ys[t][n])) for t in 1:length(ys)]) for n in 1:length(first(ys))]
     Flux.reset!(m)
     return zs
 end
