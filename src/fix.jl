@@ -4,8 +4,8 @@
 end
 
 export cugc
-cugc() = gc()
-@require CuArrays @suppress cugc() = (gc(); CuArrays.reclaim(true))
+cugc() = gc(true)
+@require CuArrays @suppress cugc() = (gc(true); CuArrays.reclaim(true))
 
 using Flux.Tracker: TrackedArray, track
 

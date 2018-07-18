@@ -15,6 +15,7 @@ macro pepochs(n, ex)
       info("Rank: $(myrank()), Epoch $i")
       flush(STDOUT)
       $(esc(ex))
+      cugc()
     end)
 end
 
