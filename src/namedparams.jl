@@ -1,6 +1,6 @@
 using Flux: RNNCell, LSTMCell, GRUCell, Recur
 using Flux: children
-using DataFlow: OSet
+using Flux.Tracker: IdSet
 
 namedchildren(x) = [(:nothing, c) for c in children(x)]
 
@@ -14,7 +14,7 @@ namedchildren(BN::BatchNorm) = zip((:λ, :β, :γ, :μ, :σ, :ϵ, :momentum, :ac
                     (BN.λ, BN.β, BN.γ, BN.μ, BN.σ, BN.ϵ, BN.momentum, BN.active))
 
 
-function namedprefor(f, namedx; seen = OSet())
+function namedprefor(f, namedx; seen = IdSet())
     name, x = namedx
     x ∈ seen && return
     f(name, x)
