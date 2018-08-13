@@ -7,10 +7,9 @@ end
 
 function predseqbatch(m, Xs, catseqdim = 1; reset::Bool = true)
     m′ = forwardmode(m)
-    Ys = [predseq(m′, xs, catseqdim) for xs in Xs]
+    Ys = [predseq(m′, xs, catseqdim; reset = reset) for xs in Xs]
     ys = first(Ys)
     catdims = ndims.(ys)
     Zs = [cat(catdims[n], [Ys[b][n] for b in 1:length(Ys)]...) for n in 1:length(ys)]
-    reset && Flux.reset!(m)
     return Zs
 end
