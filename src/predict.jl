@@ -6,7 +6,8 @@ function predseq(m, xs, catseqdim; reset::Bool = true)
 end
 
 function predseqbatch(m, Xs, catseqdim = 1; reset::Bool = true)
-    m′ = forwardmode(m)
+    !reset && length(Xs) > 1 && error("batchsize is too small")
+    m′ = reset ? forwardmode(m) : m
     Ys = [predseq(m′, xs, catseqdim; reset = reset) for xs in Xs]
     ys = first(Ys)
     catdims = ndims.(ys)
