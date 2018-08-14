@@ -1,10 +1,14 @@
-function weightindices(m)
+function weightindices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
     for (name, p) in namedparams(m)
         if ndims(p) == 2
             @assert contains(lowercase(string(name)), "w")
-            ind = eachrow(reshape(linearindices(p) + pos, size(p)))
-            append!(inds, ind)
+            if maxnorm
+                ind = eachrow(reshape(linearindices(p) + pos, size(p)))
+                append!(inds, ind)
+            else
+                push!(inds, linearindices(p) + pos)
+            end
         end
         pos += length(p)
     end
