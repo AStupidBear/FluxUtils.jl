@@ -33,7 +33,16 @@ end
 
 export states
 function states(m)
-    s = Any[]
-    prefor(x -> x isa Recur && push!(s, x.state), m)
-    return s
+    ss = Any[]
+    prefor(x -> x isa Recur && push!(ss, x.state), m)
+    return ss
+end
+
+export loadstates!
+function loadstates!(m, xs)
+  for (s, x) in zip(states(m), xs)
+    size(p) == size(x) ||
+      error("Expected param size $(size(p)), got $(size(x))")
+    copy!(data(s), data(x))
+  end
 end
