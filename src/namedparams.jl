@@ -30,3 +30,10 @@ function namedparams(m)
     (Symbol(typename(m)), m))
   return ps
 end
+
+export states
+function states(m)
+    s = Any[]
+    prefor(x -> x isa Recur && push!(s, x.state), m)
+    return s
+end
