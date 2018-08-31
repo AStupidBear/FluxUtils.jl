@@ -34,15 +34,18 @@ end
 export states
 function states(m)
     ss = Any[]
-    prefor(x -> x isa Recur && push!(ss, x.state), m)
+    Flux.prefor(m) do x
+      x isa Recur || return 
+      x.state is a Tuple ? push!(ss, x.state...) : push!(ss, x.state)
+    end
     return ss
 end
 
 export loadstates!
 function loadstates!(m, xs)
   for (s, x) in zip(states(m), xs)
-    size(p) == size(x) ||
-      error("Expected param size $(size(p)), got $(size(x))")
-    copy!(data(s), data(x))
+    size(s) == size(x) ||
+      error("Expected param size $(size(s)), got $(size(x))")
+    copy!(Flux.data(s), Flux.data(x))
   end
 end
