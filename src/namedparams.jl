@@ -36,7 +36,7 @@ function states(m)
     ss = Any[]
     Flux.prefor(m) do x
       x isa Recur || return 
-      x.state is a Tuple ? push!(ss, x.state...) : push!(ss, x.state)
+      x.state isa Tuple ? push!(ss, x.state...) : push!(ss, x.state)
     end
     return ss
 end
