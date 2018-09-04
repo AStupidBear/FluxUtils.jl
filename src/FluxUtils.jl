@@ -15,6 +15,7 @@ export savenet, loadnet!
 export gradseq, gradseqbatch, lossseqbatch
 export myrank, worldsize
 export plog, @pepochs
+export FluxNet, xy2data
 
 include("math.jl")
 include("batch.jl")
