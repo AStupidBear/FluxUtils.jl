@@ -29,5 +29,6 @@ include("io.jl")
 include("grad.jl")
 include("mpi.jl")
 include("optimizer.jl")
+include("sklearn.jl")
 
 end
