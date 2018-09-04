@@ -21,11 +21,12 @@ Flux.Optimise.ADAM(ps, η = 1f-3; β1 = 0.9f0, β2 = 0.999f0, ϵ = 1f-08, decay 
 function Flux.Optimise.train!(loss, data, opt; logintvl = 10, cb = () -> ())
     cb = runall(cb)
     opt = runall(opt)
-    ltot = 0f0
+    ltot, nbatch = 0f0, 0
     logcb = throttle(plog, logintvl)
     @progress for d in data
         l = loss(d...)
         ltot += Flux.data(l)
+        nbatch += 1
         logcb("Loss", l)
         isinf(l) && error("Loss is Inf")
         isnan(l) && error("Loss is NaN")
@@ -33,7 +34,7 @@ function Flux.Optimise.train!(loss, data, opt; logintvl = 10, cb = () -> ())
         opt()
         cb() == :stop && break
     end
-    plog("AvgLoss", ltot / length(data), :yellow)
+    plog("AvgLoss", ltot / nbatch, :yellow)
 end
 
 end
