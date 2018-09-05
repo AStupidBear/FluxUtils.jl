@@ -3,8 +3,9 @@ using Flux.Optimise: back!, runall, @progress, @interrupts
 
 @init @suppress begin
 
-Flux.Optimise.ADAMW(ps, η = 1f-3; β1 = 0.9f0, β2 = 0.999f0, ϵ = 1f-8, decay = 0f0) =
-  optimiser(ps, p -> adam(p; η = η, β1 = β1, β2 = β2, ϵ = ϵ), p -> descentweightdecay(p, 1, decay))
+Flux.Optimise.ADAMW(ps, η = 1f-3; β1 = 0.9f0, β2 = 0.999f0, ϵ = 1f-8, decay = 0f0, thresh = 0.5f0) =
+  optimiser(ps, p -> clip(p, thresh), p -> adam(p; η = η, β1 = β1, β2 = β2, ϵ = ϵ), 
+                p -> descentweightdecay(p, 1, decay))
        
 Flux.Optimise.SGD(ps, η = 1f-1; decay = 0f0, thresh = 0.5f0) =
   optimiser(ps, p -> clip(p, thresh), p -> invdecay(p, decay), p -> descent(p, η))
