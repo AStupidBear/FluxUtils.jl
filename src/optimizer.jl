@@ -22,13 +22,13 @@ Flux.Optimise.ADAM(ps, η = 1f-3; β1 = 0.9f0, β2 = 0.999f0, ϵ = 1f-8, decay =
   optimiser(ps, p -> clip(p, thresh), p -> adam(p; η = η, β1 = β1, β2 = β2, ϵ = ϵ), 
                 p -> invdecay(p, decay), p -> descent(p, 1))
 
-function Flux.Optimise.train!(loss, data, opt; logintvl = 10, cb = () -> ())
+function Flux.Optimise.train!(m, loss, data, opt; logintvl = 10, cb = () -> ())
     cb = runall(cb)
     opt = runall(opt)
     ltot, nbatch = 0f0, 0
     logcb = throttle(plog, logintvl)
     @progress for d in data
-        l = loss(d...)
+        l = loss(m, d...)
         ltot += Flux.data(l)
         nbatch += 1
         logcb("Loss", l)
