@@ -16,3 +16,15 @@ function fit!(net::FluxNet, x, y; epochs = 1, batchsize = 50, seqsize = 300, cb 
     data = xy2data(x, y, batchsize, seqsize)
     Flux.@epochs epochs Flux.train!(partial(net.loss, net), data, net.opt; cb = [cugc, cb...])
 end
+
+function predict!(ŷ, net::FluxNet, x; batchsize = 50)
+    for ib in indbatch(1:size(x, 2), batchsize)
+        if ndims(x) == 3
+            for t in 1:size(x, 3)
+                ŷ[:, ib, t] = net(gpu(x[:, ib, t]))
+            end
+        else
+            ŷ[:, ib] = net(gpu(x[:, ib]))
+        end
+    end
+end
