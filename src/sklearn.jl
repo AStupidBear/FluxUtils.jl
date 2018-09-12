@@ -12,20 +12,20 @@ function xy2data(x, y, batchsize, seqsize = 1)
     end
 end
 
-function fit!(net::FluxNet, x, y; epochs = 1, batchsize = 50, seqsize = 300, cb = [])
-    data = xy2data(x, y, batchsize, seqsize)
-    Flux.@epochs epochs Flux.train!(net, net.loss, data, net.opt; cb = [cugc, cb...])
+function fit!(m::FluxNet, x, y; cb = [])
+    data = xy2data(x, y, m.batchsize, m.seqsize)
+    Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
 end
 
-function predict!(ŷ, net::FluxNet, x; batchsize = 50)
-    netfw = forwardmode(net)
-    for ib in indbatch(1:size(x, 2), batchsize)
+function predict!(ŷ, m::FluxNet, x)
+    mf = forwardmode(m)
+    for ib in indbatch(1:size(x, 2), mf.batchsize)
         if ndims(x) == 3
             for t in 1:size(x, 3)
-                ŷ[:, ib, t] = netfw(gpu(x[:, ib, t]))
+                ŷ[:, ib, t] = mf(gpu(x[:, ib, t]))
             end
         else
-            ŷ[:, ib] = netfw(gpu(x[:, ib]))
+            ŷ[:, ib] = mf(gpu(x[:, ib]))
         end
     end
 end
