@@ -3,11 +3,11 @@ abstract type FluxNet end
 
 function xy2data(x, y, batchsize, seqsize = 1)
     if ndims(x) == 3
-        data = ((gpu.(eachcol(x[:, ib, is])), gpu.(eachcol(y[:, ib, is])))
+        data = ((eachcol(x[:, ib, is]), eachcol(y[:, ib, is]))
                 for is in indbatch(1:size(x, 3), seqsize)
                 for ib in indbatch(1:size(x, 2), batchsize))
     else
-        data = ((gpu.(eachcol(x[:, ib])), gpu.(eachcol(y[:, ib])))
+        data = ((eachcol(x[:, ib]), eachcol(y[:, ib]))
                 for ib in indbatch(1:size(x, 2), batchsize))
     end
 end
@@ -22,10 +22,10 @@ function predict!(ŷ, m::FluxNet, x)
     for ib in indbatch(1:size(x, 2), mf.batchsize)
         if ndims(x) == 3
             for t in 1:size(x, 3)
-                ŷ[:, ib, t] = mf(gpu(x[:, ib, t]))
+                ŷ[:, ib, t] = mf(x[:, ib, t])
             end
         else
-            ŷ[:, ib] = mf(gpu(x[:, ib]))
+            ŷ[:, ib] = mf(x[:, ib])
         end
     end
 end
