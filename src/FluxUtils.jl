@@ -7,7 +7,7 @@ using Flux, BSON, Adapt, Utils, Requires, Suppressor
 export fσ, fsigmoid, ftanh, softσ, softsigmoid
 export indbatch, minibatch, tupseqbatch
 export FLSTM
-export forwardmode, float32
+export forwardmode, float32, gpu32
 export predseq, predseqbatch
 export namedparams
 export weightindices, net2vec, vec2net!
