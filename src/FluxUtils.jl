@@ -4,7 +4,7 @@ module FluxUtils
 
 using Flux, BSON, Adapt, Utils, Requires, Suppressor
 
-export fσ, fsigmoid, ftanh, softσ, softsigmoid
+export softσ, σp, tanhp
 export indbatch, minibatch, tupseqbatch
 export FLSTM
 export forwardmode, float32, gpu32
