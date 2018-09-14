@@ -3,7 +3,7 @@ export FluxNet
 
 abstract type FluxNet end
 
-part(x, y) = (x, y)
+part(x) = x
 
 @require MPI begin
     function part(x)
@@ -45,16 +45,14 @@ end
 
 function fit!(m::FluxNet, x, y; cb = [])
     data = xy2data(x, y, m.batchsize, m.seqsize)
-    Flux.@epochs m.epochs begin
-        Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
-    end
+    Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
 end
 
 function predict!(ŷ, m::FluxNet, x)
-    x = rebatch(x, batchsize)
-    ŷ = rebatch(ŷ, batchsize)  
+    x = rebatch(x, m.batchsize)
+    ŷ = rebatch(ŷ, m.batchsize)  
     mf = forwardmode(m)
-    for bs in indbatch(indices(x, 2), mf.batchsize)
+    for bs in indbatch(indices(x, 2), m.batchsize)
         for t in 1:size(x, 3)
             ŷ[:, bs, t] = cpu(mf(gpu(x[:, bs, t])))
         end
