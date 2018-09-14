@@ -32,11 +32,13 @@ function rebatch(x, batchsize)
 end
 
 function xy2data(x, y, batchsize, seqsize)
+    x, y, batchsize, seqsize = rand(10, 100, 1000), rand(1, 100, 1000), 100, 10
     x = rebatch(part(x), batchsize)
     y = rebatch(part(y), batchsize)
     titr = indbatch(indices(x, 3), seqsize)
     bitr = indbatch(indices(x, 2), batchsize)
-    Generator(product(titr, bitr)) do ts, bs
+    Generator(product(titr, bitr)) do args
+        ts, bs = args
         xs = [gpu(x[:, bs, t]) for t in ts]
         ys = [gpu(y[:, bs, t]) for t in ts]
         return xs, ys
