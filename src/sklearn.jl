@@ -1,31 +1,62 @@
+using Base: Generator, product
 export FluxNet
+
 abstract type FluxNet end
 
-function xy2data(x, y, batchsize, seqsize = 1)
-    if ndims(x) == 3
-        data = ((gpu.(eachcol(x[:, ib, is])), gpu.(eachcol(y[:, ib, is])))
-                for is in indbatch(1:size(x, 3), seqsize)
-                for ib in indbatch(1:size(x, 2), batchsize))
-    else
-        data = ((gpu.(eachcol(x[:, ib])), gpu.(eachcol(y[:, ib])))
-                for ib in indbatch(1:size(x, 2), batchsize))
+part(x, y) = (x, y)
+
+@require MPI begin
+    function part(x)
+        comm = MPI.COMM_WORLD
+        rank = MPI.Comm_rank(comm)
+        size = MPI.Comm_size(comm)
+        if size(x, 3) > size(x, 2)
+            c = Flux.chunk(indices(x, 3), size)
+            view(x, :, :, c)
+        else
+            c = Flux.chunk(indices(x, 2), size)
+            view(x, :, c, :)
+        end
+    end
+end
+
+function rebatch(x, batchsize)
+    nb, nt = size(x, 2), size(x, 3)
+    n = batchsize ÷ nb
+    n > 1 || return x
+    nt′, nb′ = nt ÷ n, nb * n
+    xt = view(x, :, :, OneTo(nt′ * n))
+    xp = PermutedDimsArray(xt, [1, 3, 2])
+    xr = reshape(xp, :, nt′, nb′)
+    PermutedDimsArray(xr, [1, 3, 2])
+end
+
+function xy2data(x, y, batchsize, seqsize)
+    x = rebatch(part(x), batchsize)
+    y = rebatch(part(y), batchsize)
+    titr = indbatch(indices(x, 3), seqsize)
+    bitr = indbatch(indices(x, 2), batchsize)
+    Generator(product(titr, bitr)) do ts, bs
+        xs = [gpu(x[:, bs, t]) for t in ts]
+        ys = [gpu(y[:, bs, t]) for t in ts]
+        return xs, ys
     end
 end
 
 function fit!(m::FluxNet, x, y; cb = [])
     data = xy2data(x, y, m.batchsize, m.seqsize)
-    Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
+    Flux.@epochs m.epochs begin
+        Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
+    end
 end
 
 function predict!(ŷ, m::FluxNet, x)
+    x = rebatch(x, batchsize)
+    ŷ = rebatch(ŷ, batchsize)  
     mf = forwardmode(m)
-    for ib in indbatch(1:size(x, 2), mf.batchsize)
-        if ndims(x) == 3
-            for t in 1:size(x, 3)
-                ŷ[:, ib, t] = cpu(mf(gpu(x[:, ib, t])))
-            end
-        else
-            ŷ[:, ib] = cpu(mf(gpu(x[:, ib])))
+    for bs in indbatch(indices(x, 2), mf.batchsize)
+        for t in 1:size(x, 3)
+            ŷ[:, bs, t] = cpu(mf(gpu(x[:, bs, t])))
         end
     end
 end

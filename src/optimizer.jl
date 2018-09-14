@@ -27,9 +27,13 @@ function Flux.Optimise.train!(m, loss, data, opt; logintvl = 10, cb = [])
     opt = runall(opt)
     ltot, nbatch = 0f0, 0
     logcb = throttle(plog, logintvl)
-    @progress for d in data
+    @progress for (i, d) in enumerate(data)
         l = loss(m, d...)
-        Flux.reset!(m)
+        if i % size(data, 1) == 0
+            Flux.reset!(m)
+        else
+            Flux.truncate!(m)
+        end
         ltot += Flux.data(l)
         nbatch += 1
         logcb("Loss", l)
