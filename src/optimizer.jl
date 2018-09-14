@@ -29,7 +29,7 @@ function Flux.Optimise.train!(m, loss, data, opt; logintvl = 10, cb = [])
     logcb = throttle(plog, logintvl)
     for (i, d) in enumerate(data)
         l = loss(m, d...)
-        if i % size(data, 1) == 0
+        if i % size(data)[1] == 0
             Flux.reset!(m)
         else
             Flux.truncate!(m)
