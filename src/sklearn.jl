@@ -1,24 +1,8 @@
 using Base: Generator, product
-export FluxNet
 
 abstract type FluxNet end
 
 part(x) = x
-
-@require MPI @suppress begin
-    function part(x)
-        comm = MPI.COMM_WORLD
-        rank = MPI.Comm_rank(comm)
-        size = MPI.Comm_size(comm)
-        if size(x, 3) > size(x, 2)
-            c = Flux.chunk(indices(x, 3), size)
-            view(x, :, :, c)
-        else
-            c = Flux.chunk(indices(x, 2), size)
-            view(x, :, c, :)
-        end
-    end
-end
 
 function rebatch(x, batchsize)
     nb, nt = size(x, 2), size(x, 3)

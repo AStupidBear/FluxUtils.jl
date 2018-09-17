@@ -1,26 +1,5 @@
 using Flux.Optimise: Param, call
 
-myrank() = myid() - 1
-
-worldsize() = nworkers()
-
-function plog(name, val, color = :blue)
-    str = @sprintf("Rank: %d, %s: %.4f\n", myrank(), name, val)
-    print_with_color(color, str)
-    flush(STDOUT)
-end
-
-macro pepochs(n, ex)
-  :(for i = 1:$(esc(n))
-      info("Rank: $(myrank()), Epoch $i")
-      flush(STDOUT)
-      $(esc(ex))
-      cugc()
-    end)
-end
-
-@require MPI @suppress begin
-
 myrank() = MPI.Comm_rank(MPI.COMM_WORLD)
 
 worldsize() = MPI.Comm_size(MPI.COMM_WORLD)
@@ -43,4 +22,15 @@ function Flux.Optimise.optimiser(ps, fs...)
     () -> foreach(call, fs)
 end
 
+function part(x)
+    comm = MPI.COMM_WORLD
+    rank = MPI.Comm_rank(comm)
+    size = MPI.Comm_size(comm)
+    if size(x, 3) > size(x, 2)
+        c = Flux.chunk(indices(x, 3), size)
+        view(x, :, :, c)
+    else
+        c = Flux.chunk(indices(x, 2), size)
+        view(x, :, c, :)
+    end
 end
