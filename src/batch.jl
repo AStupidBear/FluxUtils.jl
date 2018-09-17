@@ -3,8 +3,3 @@ indbatch(x, b, offset = 0) = (C = ccount(x); min(i + offset, C):min(i + offset +
 minibatch(x, batchsize) = Any[cview(x, ind) for ind in indbatch(x, batchsize)]
 
 minibatch(x, y, batchsize) = Any[(cview(x, ind), cview(y, ind)) for ind in indbatch(x, batchsize)]
-
-function tupseqbatch(Xs, batchsize, by = identity, gpu = Flux.gpu)
-    Xs′ = (by.(xs) for xs in minibatch(Xs, batchsize))
-    Xs′′ = ([gpu(cview(xs, i)) for i in 1:ccount(xs)] for xs in Xs′)
-end
