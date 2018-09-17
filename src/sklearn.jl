@@ -15,32 +15,43 @@ function rebatch(x, batchsize)
     PermutedDimsArray(xr, [1, 3, 2])
 end
 
-function xy2data(x, y, batchsize, seqsize)
+function datagen(x, batchsize, seqsize)
     x = rebatch(part(x), batchsize)
-    y = rebatch(part(y), batchsize)
     titr = indbatch(indices(x, 3), seqsize)
     bitr = indbatch(indices(x, 2), batchsize)
-    g = Generator(product(titr, bitr)) do args
+    Generator(product(titr, bitr)) do args
         ts, bs = args
         xs = [gpu(x[:, bs, t]) for t in ts]
-        ys = [gpu(y[:, bs, t]) for t in ts]
-        return xs, ys
+        return xs
     end
 end
 
+function datagen(x, batchsize)
+    x = rebatch(part(x), batchsize)
+    titr = 1:indices(x, 3)
+    bitr = indbatch(indices(x, 2), batchsize)
+    Generator(product(titr, bitr)) do args
+        t, bs = args
+        view(x, :, bs, t)
+    end
+end
+
+datagen(x::Tuple, args...) = zip(datagen.(x, args...)...)
+
 function fit!(m::FluxNet, x, y; cb = [])
-    data = xy2data(x, y, m.batchsize, m.seqsize)
+    data = zip(datagen(x, m.batchsize, m.seqsize), datagen(y, m.batchsize, m.seqsize))
     Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
 end
 
 function predict!(ŷ, m::FluxNet, x)
     fill!(ŷ, 0f0)
-    x = rebatch(x, m.batchsize)
-    ŷ = rebatch(ŷ, m.batchsize)  
-    mf = forwardmode(m)
-    for bs in indbatch(indices(x, 2), m.batchsize)
-        for t in 1:size(x, 3)
-            ŷ[:, bs, t] = cpu(mf(gpu(x[:, bs, t])))
-        end
+    data = zip(datagen(x, m.batchsize), datagen(y, m.batchsize))
+    for (x, y) in data
+        copy!(y, cpu(mf(gpu(x))))
     end
+    return ŷ
 end
+
+Base.fill!(As::Tuple, x) = fill!.(As, x)
+
+Base.copy!(dests::Tuple, srcs::Tuple) = copy!.(dests, srcs)
