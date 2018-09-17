@@ -28,7 +28,7 @@ end
 
 function datagen(x, batchsize)
     x = rebatch(part(x), batchsize)
-    titr = 1:indices(x, 3)
+    titr = indices(x, 3)
     bitr = indbatch(indices(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         t, bs = args
@@ -45,9 +45,10 @@ end
 
 function predict!(ŷ, m::FluxNet, x)
     fill!(ŷ, 0f0)
-    data = zip(datagen(x, m.batchsize), datagen(y, m.batchsize))
-    for (x, y) in data
-        copy!(y, cpu(mf(gpu(x))))
+    data = zip(datagen(x, m.batchsize), datagen(ŷ, m.batchsize))
+    mf = forwardmode(m)
+    for (xi, yi) in data
+        copy!(yi, cpu(mf(gpu(xi))))
     end
     return ŷ
 end
