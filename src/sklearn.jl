@@ -50,6 +50,7 @@ function fit!(m::FluxNet, x, y; cb = [])
 end
 
 function predict!(ŷ, m::FluxNet, x)
+    fill!(ŷ, 0f0)
     x = rebatch(x, m.batchsize)
     ŷ = rebatch(ŷ, m.batchsize)  
     mf = forwardmode(m)
