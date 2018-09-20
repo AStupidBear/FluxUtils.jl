@@ -44,7 +44,7 @@ function fit!(m::FluxNet, x, y; sample_weight = nothing, cb = [])
     if sample_weight == nothing
         data = zip(dx, dy)
     else
-        dw = datagen(y, m.batchsize, m.seqsize)
+        dw = datagen(sample_weight, m.batchsize, m.seqsize)
         data = zip(dx, dy, dw)
     end
     Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
