@@ -44,6 +44,7 @@ function fit!(m::FluxNet, x, y; sample_weight = nothing, cb = [])
     if sample_weight == nothing
         data = zip(dx, dy)
     else
+        scale!(w, length(w) / sum(w))
         dw = datagen(sample_weight, m.batchsize, m.seqsize)
         data = zip(dx, dy, dw)
     end
