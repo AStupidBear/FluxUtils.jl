@@ -69,4 +69,4 @@ Base.fill!(As::Tuple, x) = fill!.(As, x)
 
 Base.copy!(dests::Tuple, srcs::Tuple) = copy!.(dests, srcs)
 
-checkdims(xs...) = any(ndims.(xs)) && error("all ndims of input should be 3")
+checkdims(xs...) = Flux.prefor(x -> x isa AbstractArray && ndims(x) != 3 && error("ndims should be 3"), xs)
