@@ -39,19 +39,23 @@ end
 datagen(x::Tuple, args...) = zip(datagen.(x, args...)...)
 
 function fit!(m::FluxNet, x, y; sample_weight = nothing, cb = [])
+    checkdims(x, y)
     dx = datagen(x, m.batchsize, m.seqsize)
     dy = datagen(y, m.batchsize, m.seqsize)
     if sample_weight == nothing
         data = zip(dx, dy)
     else
+        checkdims(sample_weight)
+        w = sample_weight
         scale!(w, length(w) / sum(w))
-        dw = datagen(sample_weight, m.batchsize, m.seqsize)
+        dw = datagen(w, m.batchsize, m.seqsize)
         data = zip(dx, dy, dw)
     end
     Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
 end
 
 function predict!(ŷ, m::FluxNet, x)
+    checkdims(x, ŷ)
     fill!(ŷ, 0f0)
     data = zip(datagen(x, m.batchsize), datagen(ŷ, m.batchsize))
     mf = forwardmode(m)
@@ -64,3 +68,5 @@ end
 Base.fill!(As::Tuple, x) = fill!.(As, x)
 
 Base.copy!(dests::Tuple, srcs::Tuple) = copy!.(dests, srcs)
+
+checkdims(xs...) = any(ndims.(xs)) && error("all ndims of input should be 3")
