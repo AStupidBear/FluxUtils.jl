@@ -12,6 +12,7 @@ export savenet, loadnet!
 export plog, @pepochs
 export FluxNet, xy2data
 export cugc, vecnorm2
+export wmse
 
 include("math.jl")
 include("batch.jl")
@@ -23,6 +24,7 @@ include("params.jl")
 include("vector.jl")
 include("io.jl")
 include("sklearn.jl")
+include("loss.jl")
 
 @init @suppress include(joinpath(@__DIR__, "optimizer.jl"))
 @init @suppress include(joinpath(@__DIR__, "train.jl"))
