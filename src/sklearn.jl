@@ -1,6 +1,6 @@
 using Base: Generator, product
 
-export FluxNet, xy2data, datagen
+export FluxNet, xy2data, datagen, part
 
 abstract type FluxNet end
 
