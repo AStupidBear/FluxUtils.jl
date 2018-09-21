@@ -1,3 +1,5 @@
+export plog, @pepochs
+
 myrank() = myid() - 1
 
 function plog(name, val, color = :blue)

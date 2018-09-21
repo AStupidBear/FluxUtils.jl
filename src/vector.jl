@@ -1,3 +1,5 @@
+export weightindices, net2vec, vec2net!
+
 function weightindices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
     for (name, p) in namedparams(m)

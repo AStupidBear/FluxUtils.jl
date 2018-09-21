@@ -1,5 +1,7 @@
 using Flux.Tracker: TrackedArray, track
 
+export cugc, vecnorm2
+
 cugc() = gc(true)
 
 for f in [:vcat, :hcat]

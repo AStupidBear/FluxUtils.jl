@@ -1,3 +1,5 @@
+export forwardmode, float32, gpu32
+
 Adapt.adapt_(::Type{<:Array{T}}, xs::Array) where T <: AbstractFloat = 
     isbits(xs) ? xs : convert(Array{T}, xs)
 

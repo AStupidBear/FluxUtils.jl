@@ -4,16 +4,6 @@ module FluxUtils
 
 using Flux, BSON, Adapt, Utils, Requires, Suppressor
 
-export indbatch, minibatch
-export forwardmode, float32, gpu32
-export namedparams
-export weightindices, net2vec, vec2net!
-export savenet, loadnet!
-export plog, @pepochs
-export FluxNet, xy2data
-export cugc, vecnorm2
-export wmse, datagen
-
 include("math.jl")
 include("batch.jl")
 include("layer.jl")

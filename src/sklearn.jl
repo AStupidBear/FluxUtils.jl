@@ -1,5 +1,7 @@
 using Base: Generator, product
 
+export FluxNet, xy2data, datagen
+
 abstract type FluxNet end
 
 part(x) = x

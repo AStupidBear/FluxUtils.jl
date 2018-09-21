@@ -1,3 +1,5 @@
+export savenet, loadnet!
+
 function loadnet!(m, file)
     BSON.@load file weights
     Flux.loadparams!(m, weights)

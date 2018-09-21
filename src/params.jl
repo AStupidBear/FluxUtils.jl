@@ -2,6 +2,8 @@ using Flux: RNNCell, LSTMCell, GRUCell, Recur
 using Flux: children
 using Flux.Tracker: IdSet
 
+export namedparams
+
 namedchildren(x) = [(:nothing, c) for c in children(x)]
 
 namedchildren(m::Union{Dense, Flux.Diagonal, LayerNorm, Conv, RNNCell, LSTMCell, GRUCell}) = zip(fieldnames(m), children(m))
