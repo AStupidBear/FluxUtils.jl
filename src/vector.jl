@@ -1,4 +1,4 @@
-export weightindices, net2vec, vec2net!
+export weightindices, net2vec, vec2net!, net2grad
 
 function weightindices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
