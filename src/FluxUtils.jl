@@ -12,7 +12,7 @@ export savenet, loadnet!
 export plog, @pepochs
 export FluxNet, xy2data
 export cugc, vecnorm2
-export wmse
+export wmse, datagen
 
 include("math.jl")
 include("batch.jl")
