@@ -21,16 +21,3 @@ function Flux.Optimise.optimiser(ps, fs...)
     end
     () -> foreach(call, fs)
 end
-
-function part(x)
-    comm = MPI.COMM_WORLD
-    rank = MPI.Comm_rank(comm)
-    size = MPI.Comm_size(comm)
-    if size(x, 3) > size(x, 2)
-        c = Flux.chunk(indices(x, 3), size)
-        view(x, :, :, c)
-    else
-        c = Flux.chunk(indices(x, 2), size)
-        view(x, :, c, :)
-    end
-end
