@@ -2,7 +2,10 @@ __precompile__(true)
 
 module FluxUtils
 
-using Compat, Flux, BSON, Adapt, Utils, Requires, Suppressor
+using Compat
+using Compat.Printf
+
+using Flux, BSON, Adapt, Utils, Requires, Suppressor
 
 include("math.jl")
 include("batch.jl")
