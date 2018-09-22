@@ -1,15 +1,15 @@
-export weightaxes, net2vec, vec2net!, net2grad
+export weightindices, net2vec, vec2net!, net2grad
 
-function weightaxes(m, maxnorm = false)
+function weightindices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
     for (name, p) in namedparams(m)
         if ndims(p) == 2
             @assert contains(lowercase(string(name)), "w")
             if maxnorm
-                ind = eachrow(reshape(linearaxes(p) + pos, size(p)))
+                ind = eachrow(reshape(eachindex(p) + pos, size(p)))
                 append!(inds, ind)
             else
-                push!(inds, linearaxes(p) + pos)
+                push!(inds, eachindex(p) + pos)
             end
         end
         pos += length(p)
