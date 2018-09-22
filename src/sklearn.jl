@@ -12,7 +12,7 @@ worldsize() = nworkers()
 
 function part(x)
     d = argmax(size(x))
-    is = chunk(indices(x, d), worldsize())
+    is = chunk(axes(x, d), worldsize())
     i = UnitRange(extrema(is[myrank() + 1])...)
     inds = ntuple(x -> x == d ? i : (:), ndims(x))
     view(x, inds...)
@@ -32,8 +32,8 @@ end
 function datagen(x, batchsize, seqsize; parl = true)
     x = parl ? part(x) : x
     x = rebatch(x, batchsize)
-    titr = indbatch(indices(x, 3), seqsize)
-    bitr = indbatch(indices(x, 2), batchsize)
+    titr = indbatch(axes(x, 3), seqsize)
+    bitr = indbatch(axes(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         ts, bs = args
         xs = [gpu(x[:, bs, t]) for t in ts]
@@ -44,8 +44,8 @@ end
 function datagen(x, batchsize; parl = true)
     x = parl ? part(x) : x
     x = rebatch(x, batchsize)
-    titr = indices(x, 3)
-    bitr = indbatch(indices(x, 2), batchsize)
+    titr = axes(x, 3)
+    bitr = indbatch(axes(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         t, bs = args
         view(x, :, bs, t)

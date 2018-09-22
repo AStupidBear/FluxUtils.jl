@@ -4,6 +4,7 @@ module FluxUtils
 
 using Compat
 using Compat.Printf
+using Compat: axes
 
 using Flux, BSON, Adapt, Utils, Requires, Suppressor
 
