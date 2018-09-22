@@ -9,10 +9,10 @@ mutable struct FLSTMCell{A,V}
 end
 
 function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform)
-  cell = FLSTMCell(param(init(out*4, in)), param(init(out*4, out)), param(zeros(out*4)),
-                  param(initn(out)), param(initn(out)))
-  cell.b.data[gate(out, 2)] = 1
-  return cell
+    cell = FLSTMCell(param(init(out*4, in)), param(init(out*4, out)), param(zeros(out*4)),
+                    param(initn(out)), param(initn(out)))
+    cell.b.data[gate(out, 2)] = 1
+    return cell
 end
 
 function (m::FLSTMCell)(h_, x)
@@ -30,7 +30,7 @@ end
 
 Flux.hidden(m::FLSTMCell) = (m.h, m.c)
 
-treelike(FLSTMCell)
+Flux.@treelike FLSTMCell
 
 namedchildren(m::FLSTMCell) = zip(fieldnames(m), children(m))
 

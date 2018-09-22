@@ -1,5 +1,6 @@
 using Base: Generator, product
 using Flux: chunk
+using Compat: argmax
 
 export FluxNet, xy2data, datagen, part
 
@@ -10,7 +11,7 @@ myrank() = max(0, myid() - 2)
 worldsize() = nworkers()
 
 function part(x)
-    d = indmax(size(x))
+    d = argmax(size(x))
     is = chunk(indices(x, d), worldsize())
     i = UnitRange(extrema(is[myrank() + 1])...)
     inds = ntuple(x -> x == d ? i : (:), ndims(x))
