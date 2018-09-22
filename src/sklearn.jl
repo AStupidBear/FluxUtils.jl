@@ -5,7 +5,7 @@ export FluxNet, xy2data, datagen, part
 
 abstract type FluxNet end
 
-myrank() = myid() - 1
+myrank() = max(0, myid() - 2)
 
 worldsize() = nworkers()
 
