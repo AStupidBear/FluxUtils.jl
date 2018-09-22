@@ -1,7 +1,5 @@
 export plog, @pepochs
 
-myrank() = myid() - 1
-
 function plog(name, val, color = :blue)
     str = @sprintf("Rank: %d, %s: %.4f\n", myrank(), name, val)
     print_with_color(color, str)
