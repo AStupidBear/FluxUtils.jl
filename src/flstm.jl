@@ -30,7 +30,7 @@ end
 
 Flux.hidden(m::FLSTMCell) = (m.h, m.c)
 
-Flux.@treelike FLSTMCell
+treelike(FLSTMCell)
 
 namedchildren(m::FLSTMCell) = zip(fieldnames(m), children(m))
 
