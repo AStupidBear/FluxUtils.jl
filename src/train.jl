@@ -2,14 +2,14 @@ export plog, @pepochs
 
 function plog(name, val, color = :blue)
     str = @sprintf("Rank: %d, %s: %.4f\n", myrank(), name, val)
-    print_with_color(color, str)
-    flush(STDOUT)
+    printstyled(str, color = color)
+    flush(stdout)
 end
 
 macro pepochs(n, ex)
   :(for i = 1:$(esc(n))
       info("Rank: $(myrank()), Epoch $i")
-      flush(STDOUT)
+      flush(stdout)
       $(esc(ex))
       cugc()
     end)

@@ -6,7 +6,7 @@ export namedparams
 
 namedchildren(x) = [(:nothing, c) for c in children(x)]
 
-namedchildren(m::Union{Dense, Flux.Diagonal, LayerNorm, Conv, RNNCell, LSTMCell, GRUCell}) = zip(fieldnames(m), children(m))
+namedchildren(m::Union{Dense, Flux.Diagonal, LayerNorm, Conv, RNNCell, LSTMCell, GRUCell}) = zip(fieldnames(typeof(m)), children(m))
     
 namedchildren(m::Recur) = zip((:cell, :init), children(m))
 
@@ -48,6 +48,6 @@ function loadstates!(m, xs)
   for (s, x) in zip(states(m), xs)
     size(s) == size(x) ||
       error("Expected param size $(size(s)), got $(size(x))")
-    copy!(Flux.data(s), Flux.data(x))
+    copyto!(Flux.data(s), Flux.data(x))
   end
 end

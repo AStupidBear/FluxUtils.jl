@@ -2,7 +2,7 @@ using Flux.Tracker: TrackedArray, track
 
 export cugc, vecnorm2
 
-cugc() = gc(true)
+cugc() = GC.gc(true)
 
 for f in [:vcat, :hcat]
     @eval begin

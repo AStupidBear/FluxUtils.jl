@@ -52,7 +52,7 @@ function datagen(x, batchsize; parl = true)
     end
 end
 
-datagen(x::Tuple, args...) = zip(datagen.(x, args...)...)
+datagen(x::Tuple, args...; kwargs...) = zip(datagen.(x, args...; kwargs...)...)
 
 function fit!(m::FluxNet, x, y; sample_weight = nothing, parl = true, cb = [])
     checkdims(x, y)
@@ -63,7 +63,7 @@ function fit!(m::FluxNet, x, y; sample_weight = nothing, parl = true, cb = [])
     else
         checkdims(sample_weight)
         w = sample_weight
-        scale!(w, length(w) / sum(w))
+        rmul!(w, length(w) / sum(w))
         dw = datagen(w, m.batchsize, m.seqsize)
         data = zip(dx, dy, dw)
     end
@@ -77,13 +77,13 @@ function predict!(ŷ, m::FluxNet, x)
     dy = datagen(ŷ, m.batchsize; parl = false)
     mf = forwardmode(m)
     for (xi, yi) in zip(dx, dy)
-        copy!(yi, cpu(mf(gpu(xi))))
+        copyto!(yi, cpu(mf(gpu(xi))))
     end
     return ŷ
 end
 
 Base.fill!(As::Tuple, x) = fill!.(As, x)
 
-Base.copy!(dests::Tuple, srcs::Tuple) = copy!.(dests, srcs)
+Compat.copyto!(dests::Tuple, srcs::Tuple) = copyto!.(dests, srcs)
 
 checkdims(xs...) = Flux.prefor(x -> x isa AbstractArray && ndims(x) != 3 && error("ndims should be 3"), xs)

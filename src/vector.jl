@@ -4,12 +4,12 @@ function weightindices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
     for (name, p) in namedparams(m)
         if ndims(p) == 2
-            @assert contains(lowercase(string(name)), "w")
+            @assert occursin("w", lowercase(string(name)))
             if maxnorm
-                ind = eachrow(reshape(eachindex(p) + pos, size(p)))
+                ind = eachrow(reshape(1:length(p) .+ pos, size(p)))
                 append!(inds, ind)
             else
-                push!(inds, eachindex(p) + pos)
+                push!(inds, 1:length(p) .+ pos)
             end
         end
         pos += length(p)
@@ -23,7 +23,7 @@ function vector_to_parameters!(ps, x)
     pos = 1
     for p in ps
         pos_end = pos + length(p) - 1
-        copy!(p.data, x[pos:pos_end])
+        copyto!(p.data, x[pos:pos_end])
         pos = pos_end + 1
     end
 end
