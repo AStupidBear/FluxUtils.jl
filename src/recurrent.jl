@@ -24,12 +24,12 @@ function (m::FLSTMCell)(h_, x)
     h, c = h_ # TODO: nicer syntax on 0.7
     b, o = m.b, size(h, 1)
     g = m.Wi * x .+ m.Wh * h .+ b
-    input = σp.(gate(g, o, 1))
-    forget = σp.(gate(g, o, 2))
-    cell = tanhp.(gate(g, o, 3))
-    output = σp.(gate(g, o, 4))
+    input = pσ.(gate(g, o, 1))
+    forget = pσ.(gate(g, o, 2))
+    cell = ptanh.(gate(g, o, 3))
+    output = pσ.(gate(g, o, 4))
     c = forget .* c .+ input .* cell
-    h′ = output .* tanhp.(c)
+    h′ = output .* ptanh.(c)
     return (h′, c), h′
 end
 
