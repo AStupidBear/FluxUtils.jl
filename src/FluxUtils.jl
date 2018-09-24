@@ -13,7 +13,7 @@ using Flux, BSON, Adapt, Utils, Requires
 include("math.jl")
 include("batch.jl")
 include("layer.jl")
-include("flstm.jl")
+include("recurrent.jl")
 include("fix.jl")
 include("convert.jl")
 include("params.jl")
