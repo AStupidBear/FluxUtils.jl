@@ -36,7 +36,7 @@ function datagen(x, batchsize, seqsize; parl = true)
     bitr = indbatch(axes(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         ts, bs = args
-        xs = [gpu(x[:, bs, t]) for t in ts]
+        xs = [gpu32(x[:, bs, t]) for t in ts]
         return xs
     end
 end
@@ -77,7 +77,7 @@ function predict!(ŷ, m::FluxNet, x)
     dy = datagen(ŷ, m.batchsize; parl = false)
     mf = forwardmode(m)
     for (xi, yi) in zip(dx, dy)
-        copyto!(yi, cpu(mf(gpu(xi))))
+        copyto!(yi, cpu(mf(gpu32(xi))))
     end
     return ŷ
 end
