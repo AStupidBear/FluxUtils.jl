@@ -47,24 +47,24 @@ FLSTM(a...; ka...) = Recur(FLSTMCell(a...; ka...))
 # SGRU
 
 mutable struct SGRUCell{A, V}
-  Wi::A
-  Wh::A
-  b::V
-  h::V
+    Wi::A
+    Wh::A
+    b::V
+    h::V
 end
 
 SGRUCell(in, out; init = glorot_uniform) =
-  SGRUCell(param(init(out, in)), param(init(3out, out)),
-          param(zeros(3out)), param(initn(out)))
+    SGRUCell(param(init(out, in)), param(init(3out, out)),
+            param(zeros(3out)), param(initn(out)))
 
 function (m::SGRUCell)(h, x)
-  b, o = m.b, size(h, 1)
-  gx, gh = m.Wi * x, m.Wh * h
-  r = σ.(gate(gh, o, 1) .+ gate(b, o, 1))
-  z = σ.(gate(gx, o, 2) .+ gate(gh, o, 2) .+ gate(b, o, 2))
-  h̃ = tanh.(gx .+ r .* gate(gh, o, 3) .+ gate(b, o, 3))
-  h′ = (1 .- z) .* h̃ .+ z .* h
-  return h′, h′
+    b, o = m.b, size(h, 1)
+    gx, gh = m.Wi * x, m.Wh * h
+    r = σ.(gate(gh, o, 1) .+ gate(b, o, 1))
+    z = σ.(gate(gx, o, 2) .+ gate(gh, o, 2) .+ gate(b, o, 2))
+    h̃ = tanh.(gx .+ r .* gate(gh, o, 3) .+ gate(b, o, 3))
+    h′ = (1 .- z) .* h̃ .+ z .* h
+    return h′, h′
 end
 
 hidden(m::SGRUCell) = m.h
@@ -72,30 +72,30 @@ hidden(m::SGRUCell) = m.h
 treelike(SGRUCell)
 
 Base.show(io::IO, l::SGRUCell) =
-  print(io, "SGRUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 3, ")")
+    print(io, "SGRUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 3, ")")
 
 SGRU(a...; ka...) = Recur(SGRUCell(a...; ka...))
 
 # MGU
 
 mutable struct MGUCell{A, V}
-  Wi::A
-  Wh::A
-  b::V
-  h::V
+    Wi::A
+    Wh::A
+    b::V
+    h::V
 end
 
 MGUCell(in, out; init = glorot_uniform) =
-  MGUCell(param(init(2out, in)), param(init(2out, out)),
-          param(zeros(2out)), param(initn(out)))
+    MGUCell(param(init(2out, in)), param(init(2out, out)),
+            param(zeros(2out)), param(initn(out)))
 
 function (m::MGUCell)(h, x)
-  b, o = m.b, size(h, 1)
-  gx, gh = m.Wi * x, m.Wh * h
-  r = z = σ.(gate(gx, o, 1) .+ gate(gh, o, 1) .+ gate(b, o, 1))
-  h̃ = tanh.(gate(gx, o, 2) .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
-  h′ = (1 .- z) .* h̃ .+ z .* h
-  return h′, h′
+    b, o = m.b, size(h, 1)
+    gx, gh = m.Wi * x, m.Wh * h
+    r = z = σ.(gate(gx, o, 1) .+ gate(gh, o, 1) .+ gate(b, o, 1))
+    h̃ = tanh.(gate(gx, o, 2) .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
+    h′ = (1 .- z) .* h̃ .+ z .* h
+    return h′, h′
 end
 
 hidden(m::MGUCell) = m.h
@@ -103,37 +103,37 @@ hidden(m::MGUCell) = m.h
 treelike(MGUCell)
 
 Base.show(io::IO, l::MGUCell) =
-  print(io, "MGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
+    print(io, "MGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
 
 MGU(a...; ka...) = Recur(MGUCell(a...; ka...))
 
 # SMGU
 
 mutable struct SMGUCell{A, V}
-  Wi::A
-  Wh::A
-  b::V
-  h::V
+    Wi::A
+    Wh::A
+    b::V
+    h::V
 end
 
 SMGUCell(in, out; init = glorot_uniform) =
-  SMGUCell(param(init(out, in)), param(init(2out, out)),
-          param(zeros(2out)), param(initn(out)))
+    SMGUCell(param(init(out, in)), param(init(2out, out)),
+            param(zeros(2out)), param(initn(out)))
 
 function (m::SMGUCell)(h, x)
-  b, o = m.b, size(h, 1)
-  gx, gh = m.Wi * x, m.Wh * h
-  r = z = σ.(gx .+ gate(gh, o, 1) .+ gate(b, o, 1))
-  h̃ = tanh.(gx .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
-  h′ = (1 .- z) .* h̃ .+ z .* h
-  return h′, h′
+    b, o = m.b, size(h, 1)
+    gx, gh = m.Wi * x, m.Wh * h
+    r = z = σ.(gx .+ gate(gh, o, 1) .+ gate(b, o, 1))
+    h̃ = tanh.(gx .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
+    h′ = (1 .- z) .* h̃ .+ z .* h
+    return h′, h′
 end
 
 hidden(m::SMGUCell) = m.h
 
 treelike(SMGUCell)
 
-Base.show(io::IO, l::SMGUCell) =
-  print(io, "SMGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
+Base.show(io::IO, l::SMGUCell) = 
+    print(io, "SMGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
 
 SMGU(a...; ka...) = Recur(SMGUCell(a...; ka...))

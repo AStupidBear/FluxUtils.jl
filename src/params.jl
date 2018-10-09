@@ -25,12 +25,12 @@ function namedprefor(f, namedx; seen = IdSet())
 end
 
 function namedparams(m)
-  ps = Any[]
-  namedprefor((name, p) ->
+    ps = Any[]
+    namedprefor((name, p) ->
     Tracker.istracked(p) && Tracker.isleaf(p) &&
         !any(p′ -> p′[2] === p, ps) && push!(ps, (name, p)),
     (Symbol(typename(m)), m))
-  return ps
+    return ps
 end
 
 export states
@@ -45,9 +45,9 @@ end
 
 export loadstates!
 function loadstates!(m, xs)
-  for (s, x) in zip(states(m), xs)
+    for (s, x) in zip(states(m), xs)
     size(s) == size(x) ||
-      error("Expected param size $(size(s)), got $(size(x))")
+        error("Expected param size $(size(s)), got $(size(x))")
     copyto!(Flux.data(s), Flux.data(x))
-  end
+    end
 end

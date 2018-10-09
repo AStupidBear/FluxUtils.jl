@@ -17,7 +17,7 @@ function weightindices(m, maxnorm = false)
     return inds
 end
 
-parameters_to_vector(ps) = vcat(vec.(Flux.data.(ps))...)
+parameters_to_vector(ps)::Vector{Float32} = vcat(vec.(Flux.data.(ps))...)
 
 function vector_to_parameters!(ps, x)
     pos = 1
@@ -32,6 +32,6 @@ net2vec(m) = parameters_to_vector(Flux.params(m))
 
 vec2net!(m, x) = vector_to_parameters!(Flux.params(m), x)
 
-parameters_to_grad(ps) = vcat(vec.(Tracker.grad.(ps))...)
+parameters_to_grad(ps)::Vector{Float32} = vcat(vec.(Tracker.grad.(ps))...)
 
 net2grad(m) = parameters_to_grad(Flux.params(m))
