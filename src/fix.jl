@@ -12,3 +12,5 @@ for f in [:vcat, :hcat]
 end
 
 vecnorm2(x::TrackedArray, p::Real = 2) = sqrt(sum(abs.(x).^2 .+ eps(0f0)))
+
+Flux.gpu(x) = Flux.mapleaves(identity, x)
