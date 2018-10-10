@@ -21,6 +21,7 @@ include("vector.jl")
 include("io.jl")
 include("sklearn.jl")
 include("loss.jl")
+include("broadcast.jl")
 
 @static if VERSION >= v"0.7"
     include("optimizer.jl")
