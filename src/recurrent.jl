@@ -60,9 +60,9 @@ SGRUCell(in, out; init = glorot_uniform) =
 function (m::SGRUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    r = σ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))
-    z = σ.(gate(gh, o, 2) +ᵇ gate(b, o, 2))
-    h̃ = tanh.(gx +ᵇ r *ᵇ gate(gh, o, 3) +ᵇ gate(b, o, 3))
+    r = @fix σ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))
+    z = @fix σ.(gate(gh, o, 2) +ᵇ gate(b, o, 2))
+    h̃ = @fix tanh.(gx +ᵇ r *ᵇ gate(gh, o, 3) +ᵇ gate(b, o, 3))
     h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
@@ -92,8 +92,8 @@ MGUCell(in, out; init = glorot_uniform) =
 function (m::MGUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    r = z = σ.(gate(gx, o, 1) +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
-    h̃ = tanh.(gate(gx, o, 2) +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
+    r = z = @fix σ.(gate(gx, o, 1) +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
+    h̃ = @fix tanh.(gate(gx, o, 2) +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
     h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
@@ -123,8 +123,8 @@ SMGUCell(in, out; init = glorot_uniform) =
 function (m::SMGUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    r = z = σ.(gx +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
-    h̃ = tanh.(gx +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
+    r = z = @fix σ.(gx +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
+    h̃ = @fix tanh.(gx +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
     h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
