@@ -1,15 +1,8 @@
 softσ(x) = x / (one(x) + abs(x)) / oftype(x, 2) - oftype(x, 0.5)
 
-function pσ(x)
-    x = x / oftype(x, 4.1)
-    ifelse(x > 1, one(x), ifelse(x < -1, zero(x), 
-    oftype(x, 0.5) + x * (one(x) - abs(x) / 2)))
-end
+pσ(x::Float32) = (x = x / 4.1f0; ifelse(x > 1f0, 1f0, ifelse(x < -1f0, 0f0, 0.5f0 + x * (1f0 - abs(x) / 2f0))))
 
-function ptanh(x)
-    xθ = oftype(x, 1.92033)
-    yθ = oftype(x, 0.96016)
-    λ = oftype(x, 0.26037)
-    ifelse(x > xθ, yθ, ifelse(x > 0, yθ - λ * (x - xθ)^2, 
-    ifelse(x > -xθ, λ * (x + xθ)^2 - yθ, -yθ)))
+function ptanh(x::Float32)
+    xθ, yθ, λ = 1.92033f0, 0.96016f0, 0.26037f0
+    ifelse(x > xθ, yθ, ifelse(x > 0f0, yθ - λ * (x - xθ)^2, ifelse(x > -xθ, λ * (x + xθ)^2 - yθ, -yθ)))
 end
