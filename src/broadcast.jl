@@ -1,3 +1,11 @@
+export +ᵇ, -ᵇ, *ᵇ, /ᵇ, ^ᵇ
+
++ᵇ(xs...) = broadcast(+, xs...)
+-ᵇ(x, y) = x .- y
+*ᵇ(x, y) = x .* y
+/ᵇ(xs...) = x ./ y
+^ᵇ(x, y) = x.^y
+
 using Flux.Tracker: data, tracker, unbroadcast, track, Call
 
 @inline function Flux.Tracker.∇broadcast(f::typeof(+), args::Vararg{Any, N}) where {N}

@@ -23,13 +23,13 @@ end
 function (m::FLSTMCell)(h_, x)
     h, c = h_ # TODO: nicer syntax on 0.7
     b, o = m.b, size(h, 1)
-    g = m.Wi * x .+ m.Wh * h .+ b
+    g = m.Wi * x +ᵇ m.Wh * h +ᵇ b
     input = pσ.(gate(g, o, 1))
     forget = pσ.(gate(g, o, 2))
     cell = ptanh.(gate(g, o, 3))
     output = pσ.(gate(g, o, 4))
-    c = forget .* c .+ input .* cell
-    h′ = output .* ptanh.(c)
+    c = forget *ᵇ c +ᵇ input *ᵇ cell
+    h′ = output *ᵇ ptanh.(c)
     return (h′, c), h′
 end
 
@@ -60,10 +60,10 @@ SGRUCell(in, out; init = glorot_uniform) =
 function (m::SGRUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    r = σ.(gate(gh, o, 1) .+ gate(b, o, 1))
-    z = σ.(gate(gx, o, 2) .+ gate(gh, o, 2) .+ gate(b, o, 2))
-    h̃ = tanh.(gx .+ r .* gate(gh, o, 3) .+ gate(b, o, 3))
-    h′ = (1 .- z) .* h̃ .+ z .* h
+    r = σ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))
+    z = σ.(gate(gx, o, 2) +ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
+    h̃ = tanh.(gx +ᵇ r *ᵇ gate(gh, o, 3) +ᵇ gate(b, o, 3))
+    h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
 
@@ -92,9 +92,9 @@ MGUCell(in, out; init = glorot_uniform) =
 function (m::MGUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    r = z = σ.(gate(gx, o, 1) .+ gate(gh, o, 1) .+ gate(b, o, 1))
-    h̃ = tanh.(gate(gx, o, 2) .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
-    h′ = (1 .- z) .* h̃ .+ z .* h
+    r = z = σ.(gate(gx, o, 1) +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
+    h̃ = tanh.(gate(gx, o, 2) +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
+    h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
 
@@ -123,9 +123,9 @@ SMGUCell(in, out; init = glorot_uniform) =
 function (m::SMGUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    r = z = σ.(gx .+ gate(gh, o, 1) .+ gate(b, o, 1))
-    h̃ = tanh.(gx .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
-    h′ = (1 .- z) .* h̃ .+ z .* h
+    r = z = σ.(gx +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
+    h̃ = tanh.(gx +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
+    h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
 
