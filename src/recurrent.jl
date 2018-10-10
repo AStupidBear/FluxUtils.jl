@@ -1,4 +1,4 @@
-using Flux: glorot_uniform, param, initn, gate, treelike, Recur
+using Flux: glorot_uniform, param, initn, gate, treelike, Recur, NNlib.@fix
 import Flux: hidden
 
 export FLSTM, SGRU, MGU, SMGU
