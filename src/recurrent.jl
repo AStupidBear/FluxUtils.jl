@@ -16,11 +16,11 @@ end
 function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform)
     cell = FLSTMCell(param(init(4out, in)), param(init(4out, out)), param(zeros(4out)),
                     param(initn(out)), param(initn(out)))
-    cell.b.data[gate(out, 2)] = 1
+    cell.b.data[gate(out, 2)] .= 1
     return cell
 end
 
-function (m::FLSTMCell)(h_, x::TrackedArray)
+function (m::FLSTMCell{<:TrackedArray})(h_, x)
     h, c = h_ # TODO: nicer syntax on 0.7
     b, o = m.b, size(h, 1)
     g = m.Wi * x +ᵇ m.Wh * h +ᵇ b
@@ -70,7 +70,7 @@ SGRUCell(in, out; init = glorot_uniform) =
     SGRUCell(param(init(out, in)), param(init(3out, out)),
             param(zeros(3out)), param(initn(out)))
 
-function (m::SGRUCell)(h, x::TrackedArray)
+function (m::SGRUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     r = @fix σ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))
@@ -112,7 +112,7 @@ MGUCell(in, out; init = glorot_uniform) =
     MGUCell(param(init(2out, in)), param(init(2out, out)),
             param(zeros(2out)), param(initn(out)))
 
-function (m::MGUCell)(h, x::TrackedArray)
+function (m::MGUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     r = z = @fix σ.(gate(gx, o, 1) +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
@@ -152,7 +152,7 @@ SMGUCell(in, out; init = glorot_uniform) =
     SMGUCell(param(init(out, in)), param(init(2out, out)),
             param(zeros(2out)), param(initn(out)))
 
-function (m::SMGUCell)(h, x::TrackedArray)
+function (m::SMGUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     r = z = @fix σ.(gx +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
