@@ -2,10 +2,7 @@ __precompile__(true)
 
 module FluxUtils
 
-using Compat
-using Compat.Printf
-using Compat.Distributed
-using Compat.LinearAlgebra
+using Compat, Compat.Printf, Compat.Distributed, Compat.LinearAlgebra
 using Compat: axes, rmul!
 
 using Flux, BSON, Adapt, Utils, Requires
