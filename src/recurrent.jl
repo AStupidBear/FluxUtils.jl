@@ -178,3 +178,5 @@ Base.show(io::IO, l::SMGUCell) =
     print(io, "SMGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
 
 SMGU(a...; ka...) = Recur(SMGUCell(a...; ka...))
+
+namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames(typeof(m)), children(m))
