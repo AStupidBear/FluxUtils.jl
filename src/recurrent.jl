@@ -1,4 +1,4 @@
-using Flux: glorot_uniform, param, initn, gate, treelike, Recur, NNlib.@fix, TrackedArray
+using Flux: glorot_uniform, param, initn, gate, Recur, NNlib.@fix, TrackedArray
 import Flux: hidden
 
 export FLSTM, SGRU, MGU, SMGU
@@ -48,7 +48,7 @@ end
 
 hidden(m::FLSTMCell) = (m.h, m.c)
 
-treelike(FLSTMCell)
+@treelike(FLSTMCell)
 
 namedchildren(m::FLSTMCell) = zip(fieldnames(m), children(m))
 
@@ -92,7 +92,7 @@ end
 
 hidden(m::SGRUCell) = m.h
 
-treelike(SGRUCell)
+@treelike(SGRUCell)
 
 Base.show(io::IO, l::SGRUCell) =
     print(io, "SGRUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 3, ")")
@@ -132,7 +132,7 @@ end
 
 hidden(m::MGUCell) = m.h
 
-treelike(MGUCell)
+@treelike(MGUCell)
 
 Base.show(io::IO, l::MGUCell) =
     print(io, "MGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
@@ -172,7 +172,7 @@ end
 
 hidden(m::SMGUCell) = m.h
 
-treelike(SMGUCell)
+@treelike(SMGUCell)
 
 Base.show(io::IO, l::SMGUCell) = 
     print(io, "SMGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
