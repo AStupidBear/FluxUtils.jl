@@ -5,7 +5,16 @@ module FluxUtils
 using Compat, Compat.Printf, Compat.Distributed, Compat.LinearAlgebra
 using Compat: axes, rmul!
 
-using Flux, BSON, Adapt, Utils, Requires
+using Flux, BSON, Adapt, Requires, Calculus, Utils
+@static VERSION >= v"1.0" && using Zygote
+
+macro treelike(ex)
+    @static if VERSION >= v"0.7"
+        esc(:(Flux.@treelike($ex)))
+    else
+        esc(:(Flux.treelike($ex)))
+    end
+end
 
 include("math.jl")
 include("batch.jl")
