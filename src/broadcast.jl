@@ -7,7 +7,7 @@ export +ᵇ, -ᵇ, *ᵇ, /ᵇ, ^ᵇ
 ^ᵇ(x, y) = x.^y
 
 using Base.Broadcast: Broadcasted, materialize, broadcasted
-using Flux.Tracker: data, tracker, unbroadcast, track, Call, TrackedStyle, broadcast_rebuild 
+using Flux.Tracker: data, tracker, unbroadcast, track, Call, TrackedStyle, broadcast_rebuild, istracked
 import Flux.Tracker: ∇broadcast
 
 @inline function ∇broadcast(f::typeof(+), args::Vararg{Any, N}) where {N}
@@ -59,17 +59,9 @@ bc2ex(arg, n) = (ex = Symbol("x$(n[])"); n[] += 1; ex)
 function ∇bc(bc, n = Ref(1))
     ex = bc2ex(bc, n)
     args = [Symbol("x$i") for i in 1:(n[] - 1)]
-    @static if VERSION < v"1.0"
-        ∇ex = Calculus.differentiate(ex, args)
-        @debug "using Calculus.jl to differentiate broadcasting" ∇ex
-        ∇f = eval(Expr(:->, Expr(:tuple, args...), Expr(:tuple, ∇ex...)))
-    else
-        @debug "Using Zygote.jl to differentiate broadcasting" ∇ex
-        f = eval(Expr(:->, Expr(:tuple, args...), ex))
-        ∇f = (xs...) -> Zygote.gradient(f, xs...)
-        global haha = ∇f
-    end
-    return ∇f
+    ∇exs = Calculus.differentiate(ex, args)
+    @debug "using Calculus.jl to differentiate broadcasting" ∇exs
+    ∇fs = [eval(Expr(:->, Expr(:tuple, args...), ∇ex)) for ∇ex in ∇exs]
 end
 
 const gradable_symbols = [:+; :-; :*; :/; :^; first.(Calculus.symbolic_derivatives_1arg())]
@@ -91,13 +83,12 @@ function Base.Broadcast.materialize(bc::Broadcasted{TrackedStyle})
 end
 
 @inline function ∇broadcast(f∇f::Tuple{F, G}, args::Vararg{Any, N}) where {F, G, N}
-    f, ∇f = f∇f
+    f, ∇fs = f∇f
     y = broadcast(f, data.(args)...)
     eltype(y) <: Real || return y
     eltype(y) == Bool && return y
     function back(Δ)
-        Δy = ∇f.(args...)
-        Δargs = ntuple(i -> getindex.(Δy, i), Val(N))
+        Δargs = ntuple(i -> istracked(args[i]) ? ∇fs[i].(args...) : zero(Δ), Val(N))
         dxs = map(unbroadcast, args, Δargs)
         return dxs
     end

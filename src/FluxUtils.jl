@@ -6,7 +6,6 @@ using Compat, Compat.Printf, Compat.Distributed, Compat.LinearAlgebra
 using Compat: axes, rmul!
 
 using Flux, BSON, Adapt, Requires, Calculus, Utils
-@static VERSION >= v"1.0" && using Zygote
 
 macro treelike(ex)
     @static if VERSION >= v"0.7"
