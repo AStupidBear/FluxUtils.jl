@@ -56,12 +56,20 @@ end
 
 bc2ex(arg, n) = (ex = Symbol("x$(n[])"); n[] += 1; ex)
 
+const ∇EX2∇f = Dict{Expr, Function}()
+
 function ∇bc(bc, n = Ref(1))
     ex = bc2ex(bc, n)
     args = [Symbol("x$i") for i in 1:(n[] - 1)]
     ∇exs = Calculus.differentiate(ex, args)
     @debug "using Calculus.jl to differentiate broadcasting" ∇exs
-    ∇fs = [eval(Expr(:->, Expr(:tuple, args...), ∇ex)) for ∇ex in ∇exs]
+    ∇fs = Function[]
+    for ∇ex in ∇exs
+        ∇fex = Expr(:->, Expr(:tuple, args...), ∇ex)
+        ∇f = haskey(∇EX2∇f, ∇fex) ? ∇EX2∇f[∇fex] : ∇EX2∇f[∇fex] = eval(∇fex)
+        push!(∇fs, ∇f) 
+    end
+    return ∇fs
 end
 
 const gradable_symbols = [:+; :-; :*; :/; :^; first.(Calculus.symbolic_derivatives_1arg())]
