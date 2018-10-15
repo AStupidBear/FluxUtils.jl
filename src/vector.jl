@@ -6,10 +6,10 @@ function weightindices(m, maxnorm = false)
         if ndims(p) == 2
             @assert occursin("w", lowercase(string(name)))
             if maxnorm
-                ind = eachrow(reshape(1:length(p) .+ pos, size(p)))
+                ind = eachrow(reshape((1:length(p)) .+ pos, size(p)))
                 append!(inds, ind)
             else
-                push!(inds, 1:length(p) .+ pos)
+                push!(inds, (1:length(p)) .+ pos)
             end
         end
         pos += length(p)
