@@ -70,14 +70,14 @@ function fit!(m::FluxNet, x, y; sample_weight = nothing, parl = true, cb = [])
     Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
 end
 
-function predict!(ŷ, m::FluxNet, x)
+function predict!(ŷ, m::FluxNet, x; reset = true)
     checkdims(x, ŷ)
     fill!(ŷ, 0f0)
     dx = datagen(x, m.batchsize; parl = false)
     dy = datagen(ŷ, m.batchsize; parl = false)
-    mf = forwardmode(m)
+    mf = reset ? forwardmode(m) : m
     for (xi, yi) in zip(dx, dy)
-        copyto!(yi, cpu(mf(gpu32(xi))))
+        copyto!(yi, forwardmode(cpu(mf(gpu32(xi)))))
     end
     return ŷ
 end
