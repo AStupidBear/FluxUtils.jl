@@ -1,4 +1,4 @@
-export windices, net2vec, vec2net!, net2grad, zerograd!
+export windices, net2vec, vec2net!, net2grad, zerograd!, clipnorm!
 
 function windices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
@@ -39,5 +39,12 @@ net2grad(m) = parameters_to_grad(Flux.params(m))
 function zerograd!(m)
     for p in params(m)
         p.grad .= 0f0
+    end
+end
+
+function clipnorm!(Δ, thresh)
+    nrm = norm(Δ)
+    if nrm > thresh
+        rmul!(Δ, thresh / Δ)
     end
 end
