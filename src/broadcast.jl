@@ -51,69 +51,75 @@ end
     track(Call(back, tracker.(args)), y)
 end
 
-function bc2ex(bc::Broadcasted, n = Ref(1))
-    Expr(:call, Symbol(bc.f), [bc2ex(arg, n) for arg in bc.args]...)
-end
+# Although the Calculus approch is faster than ForwardDiff on CPUs, the compiling time is untolerable. 
+# Moreover, ForwardDiff is as fast as unfused operations on CPU and much faster than Calculus.
+# So the Calculus approch is disabled by default.
 
-bc2ex(arg, n) = (ex = Symbol("x$(n[])"); n[] += 1; ex)
+# using Calculus
 
-const ∇EX2∇f = Dict{Expr, Function}()
-const ∇EX2COUNT = Dict{Expr, Int}()
+# function bc2ex(bc::Broadcasted, n = Ref(1))
+#     Expr(:call, Symbol(bc.f), [bc2ex(arg, n) for arg in bc.args]...)
+# end
 
-function real2float(ex)
-    postwalk(ex) do x
-        isa(x, Real) ? Float32(x) : x
-    end
-end
+# bc2ex(arg, n) = (ex = Symbol("x$(n[])"); n[] += 1; ex)
 
-function ∇bc(bc, n = Ref(1))
-    ex = bc2ex(bc, n)
-    args = [Symbol("x$i") for i in 1:(n[] - 1)]
-    ∇exs = real2float.(Calculus.simplify.(Calculus.differentiate(ex, args)))
-    @debug "using Calculus.jl to differentiate broadcasting" ∇exs
-    ∇fs = Function[]
-    for ∇ex in ∇exs
-        ∇fex = Expr(:->, Expr(:tuple, args...), ∇ex)
-        ∇f = haskey(∇EX2∇f, ∇fex) ? ∇EX2∇f[∇fex] : ∇EX2∇f[∇fex] = eval(∇fex)
-        push!(∇fs, ∇f) 
-    end
-    return ∇fs
-end
+# const ∇EX2∇f = Dict{Expr, Function}()
+# const ∇EX2COUNT = Dict{Expr, Int}()
 
-const gradable_symbols = [:+; :-; :*; :/; :^]
+# function real2float(ex)
+#     postwalk(ex) do x
+#         isa(x, Real) ? Float32(x) : x
+#     end
+# end
 
-function gradable(bc::Broadcasted)
-    Symbol(bc.f) in gradable_symbols && all(gradable, bc.args)
-end
+# function ∇bc(bc, n = Ref(1))
+#     ex = bc2ex(bc, n)
+#     args = [Symbol("x$i") for i in 1:(n[] - 1)]
+#     ∇exs = real2float.(Calculus.simplify.(Calculus.differentiate(ex, args)))
+#     @debug "using Calculus.jl to differentiate broadcasting" ∇exs
+#     ∇fs = Function[]
+#     for ∇ex in ∇exs
+#         ∇fex = Expr(:->, Expr(:tuple, args...), ∇ex)
+#         ∇f = haskey(∇EX2∇f, ∇fex) ? ∇EX2∇f[∇fex] : ∇EX2∇f[∇fex] = eval(∇fex)
+#         push!(∇fs, ∇f) 
+#     end
+#     return ∇fs
+# end
 
-gradable(arg) = true
+# const gradable_symbols = [:+; :-; :*; :/; :^]
 
-function Base.Broadcast.materialize(bc::Broadcasted{TrackedStyle})
-    bc1 = Broadcast.flatten(bc)
-    bc2 = Broadcast.flatten(broadcast_rebuild(bc))
-    if gradable(bc) && !in(bc2.f, [+, -, *])
-        ∇broadcast((bc2.f, ∇bc(bc)), bc1.args...)
-    else
-        ∇broadcast(bc2.f, bc1.args...)
-    end
-end
+# function gradable(bc::Broadcasted)
+#     Symbol(bc.f) in gradable_symbols && all(gradable, bc.args)
+# end
 
-@noinline function ∇broadcast(f∇f::Tuple{F, G}, args::Vararg{Any, N}) where {F, G, N}
-    f, ∇fs = f∇f
-    y = broadcast(f, data.(args)...)
-    eltype(y) <: Real || return y
-    eltype(y) == Bool && return y
-    function back(Δ)
-        Δargs = try
-            Δargs = ntuple(i -> istracked(args[i]) ? Δ .* ∇fs[i].(args...) : zero(Δ), Val(N))
-        catch
-            @debug "invokelatest ∇fs[i]"
-            ∇fs′ = ntuple(i -> (x...) -> Base.invokelatest(∇fs[i], x...), Val(N))
-            Δargs = ntuple(i -> istracked(args[i]) ? Δ .* ∇fs′[i].(args...) : zero(Δ), Val(N))
-        end
-        dxs = map(unbroadcast, args, Δargs)
-        return dxs
-    end
-    # So we can return non-tracked arrays
-    track(Call(back, tracker.(args)), y)
-end
+# gradable(arg) = true
+
+# function Base.Broadcast.materialize(bc::Broadcasted{TrackedStyle})
+#     bc1 = Broadcast.flatten(bc)
+#     bc2 = Broadcast.flatten(broadcast_rebuild(bc))
+#     if gradable(bc) && !in(bc2.f, [+, -, *])
+#         ∇broadcast((bc2.f, ∇bc(bc)), bc1.args...)
+#     else
+#         ∇broadcast(bc2.f, bc1.args...)
+#     end
+# end
+
+# @noinline function ∇broadcast(f∇f::Tuple{F, G}, args::Vararg{Any, N}) where {F, G, N}
+#     f, ∇fs = f∇f
+#     y = broadcast(f, data.(args)...)
+#     eltype(y) <: Real || return y
+#     eltype(y) == Bool && return y
+#     function back(Δ)
+#         Δargs = try
+#             Δargs = ntuple(i -> istracked(args[i]) ? Δ .* ∇fs[i].(args...) : zero(Δ), Val(N))
+#         catch
+#             @debug "invokelatest ∇fs[i]"
+#             ∇fs′ = ntuple(i -> (x...) -> Base.invokelatest(∇fs[i], x...), Val(N))
+#             Δargs = ntuple(i -> istracked(args[i]) ? Δ .* ∇fs′[i].(args...) : zero(Δ), Val(N))
+#         end
+#         dxs = map(unbroadcast, args, Δargs)
+#         return dxs
+#     end
+#     # So we can return non-tracked arrays
+#     track(Call(back, tracker.(args)), y)
+# end

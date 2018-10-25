@@ -5,7 +5,7 @@ module FluxUtils
 using Compat, Compat.Printf, Compat.Distributed, Compat.LinearAlgebra
 using Compat: axes, rmul!
 
-using Flux, BSON, Adapt, Requires, Calculus, Utils
+using Flux, BSON, Adapt, Requires, Utils
 
 macro treelike(ex)
     @static if VERSION >= v"0.7"
