@@ -1,6 +1,6 @@
-export weightindices, net2vec, vec2net!, net2grad
+export windices, net2vec, vec2net!, net2grad
 
-function weightindices(m, maxnorm = false)
+function windices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
     for (name, p) in namedparams(m)
         if ndims(p) == 2
