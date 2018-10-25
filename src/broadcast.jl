@@ -10,25 +10,6 @@ using Base.Broadcast: Broadcasted, materialize, broadcasted
 using Flux.Tracker: data, tracker, unbroadcast, track, Call, TrackedStyle, broadcast_rebuild, istracked
 import Flux.Tracker: ∇broadcast
 using MacroTools: postwalk
-using Calculus: differentiate, SymbolParameter, @sexpr
-
-additional_symbolic_derivative_1arg_list = [
-    (:tanh,  :(1 - tanh(x)^2)),
-    (:σ,  :(σ(x) * (1 - σ(x)))),
-    (:sigmoid,  :(σ(x) * (1 - σ(x)))),
-]
-
-for (funsym, exp) in additional_symbolic_derivative_1arg_list
-    @eval function Calculus.differentiate(::SymbolParameter{$(Meta.quot(funsym))}, args, wrt)
-        x = args[1]
-        xp = differentiate(x, wrt)
-        if xp != 0
-            return @sexpr(xp*$exp)
-        else
-            return 0
-        end
-    end
-end
 
 @inline function ∇broadcast(f::typeof(+), args::Vararg{Any, N}) where {N}
     y = broadcast(f, data.(args)...)
@@ -99,7 +80,7 @@ function ∇bc(bc, n = Ref(1))
     return ∇fs
 end
 
-const gradable_symbols = [:+; :-; :*; :/; :^; :σ; :sigmoid; first.(Calculus.symbolic_derivatives_1arg())]
+const gradable_symbols = [:+; :-; :*; :/; :^]
 
 function gradable(bc::Broadcasted)
     Symbol(bc.f) in gradable_symbols && all(gradable, bc.args)
