@@ -45,6 +45,6 @@ end
 function clipnorm!(Δ, thresh)
     nrm = norm(Δ)
     if nrm > thresh
-        rmul!(Δ, thresh / Δ)
+        rmul!(Δ, thresh / nrm)
     end
 end
