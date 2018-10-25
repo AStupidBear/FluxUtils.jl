@@ -1,4 +1,4 @@
-export DenseRelu
+export DenseReLU
 DenseReLU(in, out; ka...) = Dense(in, out, relu; ka...)
 
 function Flux.RNN(in::Integer, out::Integer, nlayers::Integer, 
