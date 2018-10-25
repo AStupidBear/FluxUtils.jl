@@ -1,4 +1,4 @@
-export windices, net2vec, vec2net!, net2grad
+export windices, net2vec, vec2net!, net2grad, zerograd!
 
 function windices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
@@ -35,3 +35,9 @@ vec2net!(m, x) = vector_to_parameters!(Flux.params(m), x)
 parameters_to_grad(ps)::Vector{Float32} = vcat(vec.(Tracker.grad.(ps))...)
 
 net2grad(m) = parameters_to_grad(Flux.params(m))
+
+function zerograd!(m)
+    for p in params(m)
+        p.grad .= 0f0
+    end
+end
