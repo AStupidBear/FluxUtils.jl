@@ -56,8 +56,8 @@ datagen(x::Tuple, args...; kwargs...) = zip(datagen.(x, args...; kwargs...)...)
 
 function fit!(m::FluxNet, x, y; sample_weight = nothing, parl = true, cb = [])
     checkdims(x, y)
-    dx = datagen(x, m.batchsize, m.seqsize; parl = parl)
-    dy = datagen(y, m.batchsize, m.seqsize; parl = parl)
+    dx = datagen(x, m.batchsize, m.seqsize, parl = parl)
+    dy = datagen(y, m.batchsize, m.seqsize, parl = parl)
     if sample_weight == nothing
         data = zip(dx, dy)
     else
@@ -73,8 +73,8 @@ end
 function predict!(ŷ, m::FluxNet, x; reset = true)
     checkdims(x, ŷ)
     fill!(ŷ, 0f0)
-    dx = datagen(x, m.batchsize; parl = false)
-    dy = datagen(ŷ, m.batchsize; parl = false)
+    dx = datagen(x, m.batchsize, parl = false)
+    dy = datagen(ŷ, m.batchsize, parl = false)
     mf = reset ? forwardmode(m) : m
     for (xi, yi) in zip(dx, dy)
         copyto!(yi, forwardmode(cpu(mf(gpu32(xi)))))
