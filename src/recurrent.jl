@@ -8,6 +8,15 @@ function (a::Dense{<:TrackedArray})(x::AbstractArray)
     σ.(W * x +ᵇ b)
 end
 
+function (a::Dense{<:Array})(x::AbstractArray)
+    W, b, σ = a.W, a.b, a.σ
+    y = W * x
+    for j in 1:size(y, 2), i in 1:size(y, 1)
+        y[i, j] = σ(y[i, j] + b[i])
+    end
+    return y
+end
+
 # FLSTM
 
 mutable struct FLSTMCell{A, V}
@@ -85,6 +94,27 @@ function (m::SGRUCell{<:TrackedArray})(h, x)
     return h′, h′
 end
 
+function (m::SGRUCell{<:Array})(h, x)
+    if size(h, 2) == 1 && size(x, 2) > 1
+        h = repeat(h, 1, size(x, 2))
+    end
+    b, o = m.b, size(h, 1)
+    gx, gh = m.Wi * x, m.Wh * h
+    r = zeros(Float32, o, size(x, 2))
+    z = zeros(Float32, o, size(x, 2))
+    for j in 1:size(r, 2), i in size(r, 1)
+        r[i, j] = pσ(gh[i, j] + b[i])
+    end
+    for j in 1:size(r, 2), i in size(r, 1)
+        z[i, j] = pσ(gh[i + o, j] + gh[i + o, j] + b[i + o])
+    end
+    for j in 1:size(r, 2), i in size(r, 1)
+        h′ = ptanh(gx[i + o, j] + r[i, j] * gh[i + 2o, j] + b[i + 2o])
+        h[i, j] = (1f0 - z[i, j]) * h′ + z[i, j] * h[i, j]
+    end
+    return h, h
+end
+
 function (m::SGRUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
@@ -126,6 +156,23 @@ function (m::MGUCell{<:TrackedArray})(h, x)
     return h′, h′
 end
 
+function (m::MGUCell{<:Array})(h, x)
+    if size(h, 2) == 1 && size(x, 2) > 1
+        h = repeat(h, 1, size(x, 2))
+    end
+    b, o = m.b, size(h, 1)
+    gx, gh = m.Wi * x, m.Wh * h
+    r = z = zeros(Float32, o, size(x, 2))
+    for j in 1:size(r, 2), i in size(r, 1)
+        r[i, j] = pσ(gx[i, j] + gh[i, j] + b[i])
+    end
+    for j in 1:size(r, 2), i in size(r, 1)
+        h′ = ptanh(gx[i + o, j] + r[i, j] * gh[i + o, j] + b[i + o])
+        h[i, j] = (1f0 - z[i, j]) * h′ + z[i, j] * h[i, j]
+    end
+    return h, h
+end
+
 function (m::MGUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
@@ -164,6 +211,23 @@ function (m::SMGUCell{<:TrackedArray})(h, x)
     h̃ = @fix tanh.(gx +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
     h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
+end
+
+function (m::SMGUCell{<:Array})(h, x)
+    if size(h, 2) == 1 && size(x, 2) > 1
+        h = repeat(h, 1, size(x, 2))
+    end
+    b, o = m.b, size(h, 1)
+    gx, gh = m.Wi * x, m.Wh * h
+    r = z = zeros(Float32, o, size(x, 2))
+    for j in 1:size(r, 2), i in size(r, 1)
+        r[i, j] = pσ(gx[i, j] + gh[i, j] + b[i])
+    end
+    for j in 1:size(r, 2), i in size(r, 1)
+        h′ = ptanh(gx[i, j] + r[i, j] * gh[i + o, j] + b[i + o])
+        h[i, j] = (1f0 - z[i, j]) * h′ + z[i, j] * h[i, j]
+    end
+    return h, h
 end
 
 function (m::SMGUCell)(h, x)
