@@ -3,6 +3,11 @@ import Flux: hidden
 
 export FLSTM, SGRU, MGU, SMGU
 
+function (a::Dense{<:TrackedArray})(x::AbstractArray)
+    W, b, σ = a.W, a.b, a.σ
+    σ.(W * x +ᵇ b)
+end
+
 # FLSTM
 
 mutable struct FLSTMCell{A, V}
