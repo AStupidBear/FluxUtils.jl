@@ -3,12 +3,12 @@ import Flux: hidden
 
 export FLSTM, SGRU, MGU, SMGU
 
-function (a::Dense{<:TrackedArray})(x::AbstractArray)
+function (a::Dense{<:Any, <:TrackedArray})(x::AbstractArray)
     W, b, σ = a.W, a.b, a.σ
     σ.(W * x +ᵇ b)
 end
 
-function (a::Dense{<:Array})(x::AbstractArray)
+function (a::Dense{<:Any, <:Array})(x::AbstractArray)
     W, b, σ = a.W, a.b, a.σ
     y = W * x
     for j in 1:size(y, 2), i in 1:size(y, 1)
@@ -109,7 +109,7 @@ function (m::SGRUCell{<:Array})(h, x)
         z[i, j] = pσ(gh[i + o, j] + gh[i + o, j] + b[i + o])
     end
     for j in 1:size(r, 2), i in size(r, 1)
-        h′ = ptanh(gx[i + o, j] + r[i, j] * gh[i + 2o, j] + b[i + 2o])
+        h′ = ptanh(gx[i, j] + r[i, j] * gh[i + 2o, j] + b[i + 2o])
         h[i, j] = (1f0 - z[i, j]) * h′ + z[i, j] * h[i, j]
     end
     return h, h

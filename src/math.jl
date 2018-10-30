@@ -1,3 +1,5 @@
+export pσ, ptanh
+
 softσ(x) = x / (one(x) + abs(x)) / oftype(x, 2) - oftype(x, 0.5)
 
 pσ(x) = (x = x / 4.1f0; ifelse(x > 1f0, 1f0, ifelse(x < -1f0, 0f0, 0.5f0 + x * (1f0 - abs(x) / 2f0))))
