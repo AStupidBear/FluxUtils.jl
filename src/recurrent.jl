@@ -53,18 +53,18 @@ function (m::FLSTMCell{<:Array})(h_, x)
         h = repeat(h, 1, size(x, 2))
         c = repeat(c, 1, size(x, 2))
     end
-    Wi, Wh, b, o = m.Wi, m.Wh, m.b, size(h, 1)
-    gx, gh = Wi * x, Wh * h
-    @inbounds for j in 1:size(h, 2), i in 1:size(h, 1)
+    b, o = m.b, size(h, 1)
+    gx, gh = m.Wi * x, m.Wh * h
+    for j in 1:size(h, 2), i in 1:size(h, 1)
         forget = pσ(gx[i + o, j] + gh[i + o, j] + b[i + o])
         c[i, j] *= forget
     end
-    @inbounds for j in 1:size(h, 2), i in 1:size(h, 1)
+    for j in 1:size(h, 2), i in 1:size(h, 1)
         input = pσ(gx[i, j] + gh[i, j] + b[i])
         cell = ptanh(gx[i + 2o, j] + gh[i + 2o, j] + b[i + 2o])
         c[i, j] += input * cell
     end
-    @inbounds for j in 1:size(h, 2), i in 1:size(h, 1)
+    for j in 1:size(h, 2), i in 1:size(h, 1)
         output = pσ(gx[i + 3o, j] + gh[i + 3o, j] + b[i + 3o])
         h[i, j] = output * ptanh(c[i, j])
     end
