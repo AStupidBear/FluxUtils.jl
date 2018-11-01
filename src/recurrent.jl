@@ -247,7 +247,7 @@ function (m::SMGUCell)(h, x)
     gx, gh = m.Wi * x, m.Wh * h
     r = z = pσ.(gate(gh, o, 1) .+ gate(b, o, 1))
     h̃ = ptanh.(gx .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
-    h′ = (1 .- z) .* h̃ .+ z .* h
+    h′ = (1f0 .- z) .* h̃ .+ z .* h
     return h′, h′
 end
 
@@ -261,3 +261,87 @@ Base.show(io::IO, l::SMGUCell) =
 SMGU(a...; ka...) = Recur(SMGUCell(a...; ka...))
 
 namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames(typeof(m)), children(m))
+
+# using Flux: data 
+# using Flux.Tracker: track, @grad
+
+# istrain(m, args...) = any(x -> isa(x, TrackedArray), (m.Wi, m.Wh, m.b, args...))
+
+# function forward!(m::SMGUCell, h, x, Wi, Wh, b)
+#     if ndims(h) == 1
+#         h = repeat(h, 1, size(x, 2))
+#     end
+#     o = size(h, 1)
+#     gx, gh = Wi * x, Wh * h
+#     for j in 1:size(h, 2), i in size(h, 1)
+#         u = gh[i, j] + b[i]
+#         r = z = pσ(u)
+#         v = gx[i, j] + r * gh[i + o, j] + b[i + o]
+#         h̃ = ptanh(v)
+#         h[i, j] = (1f0 - z) * h̃ + z * h[i, j]
+#     end
+#     return h, h
+# end
+
+# function (m::SMGUCell)(h, x)
+#     result = istrain(m, h, x) ?
+#     track(m, h, x, m.Wi, m.Wh, m.b) :
+#     Flux.Tracker._forward(m, h, x, m.Wi, m.Wh, m.b)[1]
+#     # forward!(m, h, x, m.Wi, m.Wh, m.b)
+#     result[1], result[2]
+# end
+
+# @grad function (m::SMGUCell)(h̄, x̄, W̄i, W̄h, b̄)
+#     h, x, Wi, Wh, b = data(h̄), data(x̄), data(W̄i), data(W̄h), data(b̄)
+#     if ndims(h) == 1
+#         h = repeat(h, 1, size(x, 2))
+#     end
+#     o = size(h, 1)
+#     gx, gh = Wi * x, Wh * h
+#     r = z = zeros(Float32, size(gx))
+#     u = zeros(Float32, size(gx))
+#     v = zeros(Float32, size(gx))
+#     h̃ = zeros(Float32, size(gx))
+#     h′ = zeros(Float32, size(gx))
+#     for j in 1:size(h, 2), i in size(h, 1)
+#         u[i, j] = gh[i, j] + b[i]
+#         z[i, j] = pσ(u[i, j])
+#     end
+#     for j in 1:size(h, 2), i in size(h, 1)
+#         v[i, j] = gx[i, j] + r[i, j] * gh[i + o, j] + b[i + o]
+#         h̃[i, j] = ptanh(v[i, j])
+#     end
+#     for j in 1:size(h, 2), i in size(h, 1)
+#         h′[i, j] = (1f0 - z[i, j]) * h̃[i, j] + z[i, j] * h[i, j]
+#     end
+#     (h′, h′), @closure Δ -> begin
+#         dh, db = zero(h), zero(b)
+#         dgx, dgh = gx, gh
+#         dh̃, dz = zero(h̃), zero(z)
+#         for j in 1:size(h, 2), i in size(h, 1)
+#             δ = Δ[1][i, j] + Δ[2][i, j]
+#             dh[i, j] += δ * z[i, j]
+#             dh̃[i, j] = δ * (1f0 - z[i, j])
+#             dz[i, j] = δ * (h[i, j] - h̃[i, j])
+#         end
+#         for j in 1:size(h, 2), i in size(h, 1)
+#             dv = dh̃[i, j] * (1f0 - v[i, j]^2)              # ∇ptanh(v[i, j])
+#             dgx[i, j] += dv
+#             dgh[i + o] += dv * r[i, j]
+#             db[i + o] += dv
+#         end
+#         for j in 1:size(h, 2), i in size(h, 1)
+#             du = dz[i, j] * (1f0 - u[i, j]) * u[i, j]      # ∇pσ(u[i, j])
+#             dgh[i, j] += du
+#             db[i] += du
+#         end
+#         # BLAS.gemm!('T', 'N', 1f0, Wh, dgh, 1f0, dh)        # dh .+= transpose(Wh) * dgh
+#         dx = transpose(Wi) * dgx
+#         dWi = dgx * transpose(dx)
+#         dWh = dgh * transpose(dh)
+#         if ndims(data(h̄)) == 1
+#             dh = vec(sum(dh, dims = 2))
+#         end
+#         return dh, dx, dWi, dWh, db
+#     end
+# end
