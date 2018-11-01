@@ -247,11 +247,8 @@ namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames
 #     h = hBatch(x, h)
 #     o = size(h, 1)
 #     gx, gh = Wi * x, Wh * h
-#     r = z = zeros(Float32, size(gx))
-#     u = zeros(Float32, size(gx))
-#     v = zeros(Float32, size(gx))
-#     h̃ = zeros(Float32, size(gx))
-#     h′ = zeros(Float32, size(gx))
+#     r = z = zero(h)
+#     u, v, h̃, h′ = zero(h), zero(h), zero(h), zero(h)
 #     for j in 1:size(h, 2), i in 1:size(h, 1)
 #         u[i, j] = gh[i, j] + b[i]
 #         z[i, j] = pσ(u[i, j])
@@ -263,34 +260,33 @@ namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames
 #     for j in 1:size(h, 2), i in 1:size(h, 1)
 #         h′[i, j] = (1f0 - z[i, j]) * h̃[i, j] + z[i, j] * h[i, j]
 #     end
-#     (h′, h′), @closure Δ -> begin
+#     return (h′, h′), @closure Δ -> begin
+#         @assert Δ[1] == 0
 #         dh, db = zero(h), zero(b)
 #         dgx, dgh = gx, gh
 #         dh̃, dz = zero(h̃), zero(z)
 #         for j in 1:size(h, 2), i in 1:size(h, 1)
-#             δ = Δ[1][i, j] + Δ[2][i, j]
+#             # δ = Δ[1][i, j] + Δ[2][i, j]
+#             δ = Δ[2][i, j]
 #             dh[i, j] += δ * z[i, j]
 #             dh̃[i, j] = δ * (1f0 - z[i, j])
 #             dz[i, j] = δ * (h[i, j] - h̃[i, j])
 #         end
 #         for j in 1:size(h, 2), i in 1:size(h, 1)
-#             dv = dh̃[i, j] * (1f0 - v[i, j]^2)              # ∇ptanh(v[i, j])
+#             dv = dh̃[i, j] * (1f0 - v[i, j]^2)                  # ∇ptanh(v[i, j])
 #             dgx[i, j] += dv
 #             dgh[i + o] += dv * r[i, j]
 #             db[i + o] += dv
 #         end
 #         for j in 1:size(h, 2), i in 1:size(h, 1)
-#             du = dz[i, j] * (1f0 - u[i, j]) * u[i, j]      # ∇pσ(u[i, j])
+#             du = dz[i, j] * (1f0 - u[i, j]) * u[i, j]           # ∇pσ(u[i, j])
 #             dgh[i, j] += du
 #             db[i] += du
 #         end
-#         # BLAS.gemm!('T', 'N', 1f0, Wh, dgh, 1f0, dh)        # dh .+= transpose(Wh) * dgh
+#         BLAS.gemm!('T', 'N', oneel(dh), Wh, dgh, oneel(dh), dh)  # dh .+= transpose(Wh) * dgh
 #         dx = transpose(Wi) * dgx
 #         dWi = dgx * transpose(dx)
 #         dWh = dgh * transpose(dh)
-#         if ndims(data(h̄)) == 1
-#             dh = vec(sum(dh, dims = 2))
-#         end
 #         dh = ndims(data(h̄)) > 1 ? dh : vec(sum(dh, dims = 2))
 #         return dh, dx, dWi, dWh, db
 #     end
