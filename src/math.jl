@@ -2,9 +2,16 @@ export pσ, ptanh
 
 softσ(x) = x / (one(x) + abs(x)) / oftype(x, 2) - oftype(x, 0.5)
 
-pσ(x) = (x = x / 4.1f0; ifelse(x > 1f0, 1f0, ifelse(x < -1f0, 0f0, 0.5f0 + x * (1f0 - abs(x) / 2f0))))
+function pσ(x)
+    l, o, h = one(x), zero(x), oftype(x, 0.5)
+    x = x / oftype(x, 4.1)
+    ifelse(x > l, l, ifelse(x < -l, o, h + x * (l - h * abs(x))))
+end
 
 function ptanh(x)
-    xθ, yθ, λ = 1.92033f0, 0.96016f0, 0.26037f0
-    ifelse(x > xθ, yθ, ifelse(x > 0f0, yθ - λ * (x - xθ)^2, ifelse(x > -xθ, λ * (x + xθ)^2 - yθ, -yθ)))
+    l, o = one(x), zero(x)
+    xθ = oftype(x, 1.92033)
+    yθ = oftype(x,  0.96016)
+    λ = oftype(x, 0.26037)
+    ifelse(x > xθ, yθ, ifelse(x > o, yθ - λ * (x - xθ)^2, ifelse(x > -xθ, λ * (x + xθ)^2 - yθ, -yθ)))
 end
