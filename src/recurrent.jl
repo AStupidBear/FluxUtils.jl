@@ -3,6 +3,10 @@ import Flux: hidden
 
 export FLSTM, SGRU, MGU, SMGU
 
+hBatch(x::AbstractVector, h::Vector) = h
+hBatch(x::AbstractMatrix, h::Vector{T}) where T = repeat(h, 1, size(x, 2))
+hBatch(x::AbstractMatrix, h::Matrix{T}) where T = size(h, 2) == 1 ? repeat(h, 1, size(x, 2)) : h
+
 function (a::Dense{<:Any, <:TrackedArray})(x::AbstractArray)
     W, b, σ = a.W, a.b, a.σ
     σ.(W * x +ᵇ b)
@@ -48,11 +52,7 @@ function (m::FLSTMCell{<:TrackedArray})(h_, x)
 end
 
 function (m::FLSTMCell{<:Array})(h_, x)
-    h, c = h_ # TODO: nicer syntax on 0.7
-    if size(h, 2) == 1 && size(x, 2) > 1
-        h = repeat(h, 1, size(x, 2))
-        c = repeat(c, 1, size(x, 2))
-    end
+    h, c = hBatch(x, h_[1]), hBatch(x, h_[2])
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     for j in 1:size(h, 2), i in 1:size(h, 1)
@@ -101,14 +101,12 @@ function (m::SGRUCell{<:TrackedArray})(h, x)
     r = pσ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))
     z = pσ.(gate(gh, o, 2) +ᵇ gate(b, o, 2))
     h̃ = ptanh.(gx +ᵇ r *ᵇ gate(gh, o, 3) +ᵇ gate(b, o, 3))
-    h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
+    h′ = (1f0 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
 
 function (m::SGRUCell{<:Array})(h, x)
-    if size(h, 2) == 1 && size(x, 2) > 1
-        h = repeat(h, 1, size(x, 2))
-    end
+    h = hBatch(x, h)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     for j in 1:size(h, 2), i in size(h, 1)
@@ -147,14 +145,12 @@ function (m::MGUCell{<:TrackedArray})(h, x)
     gx, gh = m.Wi * x, m.Wh * h
     r = z = pσ.(gate(gx, o, 1) +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
     h̃ = ptanh.(gate(gx, o, 2) +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
-    h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
+    h′ = (1f0 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
 
 function (m::MGUCell{<:Array})(h, x)
-    if size(h, 2) == 1 && size(x, 2) > 1
-        h = repeat(h, 1, size(x, 2))
-    end
+    h = hBatch(x, h)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     for j in 1:size(h, 2), i in size(h, 1)
@@ -192,14 +188,12 @@ function (m::SMGUCell{<:TrackedArray})(h, x)
     gx, gh = m.Wi * x, m.Wh * h
     r = z = pσ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))
     h̃ = ptanh.(gx +ᵇ r *ᵇ gate(gh, o, 2) +ᵇ gate(b, o, 2))
-    h′ = (1 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
+    h′ = (1f0 -ᵇ z) *ᵇ h̃ +ᵇ z *ᵇ h
     return h′, h′
 end
 
 function (m::SMGUCell{<:Array})(h, x)
-    if size(h, 2) == 1 && size(x, 2) > 1
-        h = repeat(h, 1, size(x, 2))
-    end
+    h = hBatch(x, h)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     for j in 1:size(h, 2), i in size(h, 1)
@@ -227,9 +221,7 @@ namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames
 # istrain(m, args...) = any(x -> isa(x, TrackedArray), (m.Wi, m.Wh, m.b, args...))
 
 # function forward!(m::SMGUCell, h, x, Wi, Wh, b)
-#     if ndims(h) == 1
-#         h = repeat(h, 1, size(x, 2))
-#     end
+#     h = hBatch(x, h)
 #     o = size(h, 1)
 #     gx, gh = Wi * x, Wh * h
 #     for j in 1:size(h, 2), i in size(h, 1)
@@ -252,9 +244,7 @@ namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames
 
 # @grad function (m::SMGUCell)(h̄, x̄, W̄i, W̄h, b̄)
 #     h, x, Wi, Wh, b = data(h̄), data(x̄), data(W̄i), data(W̄h), data(b̄)
-#     if ndims(h) == 1
-#         h = repeat(h, 1, size(x, 2))
-#     end
+#     h = hBatch(x, h)
 #     o = size(h, 1)
 #     gx, gh = Wi * x, Wh * h
 #     r = z = zeros(Float32, size(gx))
@@ -301,6 +291,7 @@ namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames
 #         if ndims(data(h̄)) == 1
 #             dh = vec(sum(dh, dims = 2))
 #         end
+#         dh = ndims(data(h̄)) > 1 ? dh : vec(sum(dh, dims = 2))
 #         return dh, dx, dWi, dWh, db
 #     end
 # end
