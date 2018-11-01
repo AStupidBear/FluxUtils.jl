@@ -109,7 +109,7 @@ function (m::SGRUCell{<:Array})(h, x)
     h = hBatch(x, h)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    for j in 1:size(h, 2), i in size(h, 1)
+    for j in 1:size(h, 2), i in 1:size(h, 1)
         r = pσ(gh[i, j] + b[i])
         z = pσ(gh[i + o, j] + b[i + o])
         h̃ = ptanh(gx[i, j] + r * gh[i + 2o, j] + b[i + 2o])
@@ -153,7 +153,7 @@ function (m::MGUCell{<:Array})(h, x)
     h = hBatch(x, h)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    for j in 1:size(h, 2), i in size(h, 1)
+    for j in 1:size(h, 2), i in 1:size(h, 1)
         r = z = pσ(gx[i, j] + gh[i, j] + b[i])
         h̃ = ptanh(gx[i + o, j] + r * gh[i + o, j] + b[i + o])
         h[i, j] = (1f0 - z) * h̃ + z * h[i, j]
@@ -196,7 +196,7 @@ function (m::SMGUCell{<:Array})(h, x)
     h = hBatch(x, h)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
-    for j in 1:size(h, 2), i in size(h, 1)
+    for j in 1:size(h, 2), i in 1:size(h, 1)
         r = z = pσ(gh[i, j] + b[i])
         h̃ = ptanh(gx[i, j] + r * gh[i + o, j] + b[i + o])
         h[i, j] = (1f0 - z) * h̃ + z * h[i, j]
@@ -224,7 +224,7 @@ namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames
 #     h = hBatch(x, h)
 #     o = size(h, 1)
 #     gx, gh = Wi * x, Wh * h
-#     for j in 1:size(h, 2), i in size(h, 1)
+#     for j in 1:size(h, 2), i in 1:size(h, 1)
 #         u = gh[i, j] + b[i]
 #         r = z = pσ(u)
 #         v = gx[i, j] + r * gh[i + o, j] + b[i + o]
@@ -252,34 +252,34 @@ namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames
 #     v = zeros(Float32, size(gx))
 #     h̃ = zeros(Float32, size(gx))
 #     h′ = zeros(Float32, size(gx))
-#     for j in 1:size(h, 2), i in size(h, 1)
+#     for j in 1:size(h, 2), i in 1:size(h, 1)
 #         u[i, j] = gh[i, j] + b[i]
 #         z[i, j] = pσ(u[i, j])
 #     end
-#     for j in 1:size(h, 2), i in size(h, 1)
+#     for j in 1:size(h, 2), i in 1:size(h, 1)
 #         v[i, j] = gx[i, j] + r[i, j] * gh[i + o, j] + b[i + o]
 #         h̃[i, j] = ptanh(v[i, j])
 #     end
-#     for j in 1:size(h, 2), i in size(h, 1)
+#     for j in 1:size(h, 2), i in 1:size(h, 1)
 #         h′[i, j] = (1f0 - z[i, j]) * h̃[i, j] + z[i, j] * h[i, j]
 #     end
 #     (h′, h′), @closure Δ -> begin
 #         dh, db = zero(h), zero(b)
 #         dgx, dgh = gx, gh
 #         dh̃, dz = zero(h̃), zero(z)
-#         for j in 1:size(h, 2), i in size(h, 1)
+#         for j in 1:size(h, 2), i in 1:size(h, 1)
 #             δ = Δ[1][i, j] + Δ[2][i, j]
 #             dh[i, j] += δ * z[i, j]
 #             dh̃[i, j] = δ * (1f0 - z[i, j])
 #             dz[i, j] = δ * (h[i, j] - h̃[i, j])
 #         end
-#         for j in 1:size(h, 2), i in size(h, 1)
+#         for j in 1:size(h, 2), i in 1:size(h, 1)
 #             dv = dh̃[i, j] * (1f0 - v[i, j]^2)              # ∇ptanh(v[i, j])
 #             dgx[i, j] += dv
 #             dgh[i + o] += dv * r[i, j]
 #             db[i + o] += dv
 #         end
-#         for j in 1:size(h, 2), i in size(h, 1)
+#         for j in 1:size(h, 2), i in 1:size(h, 1)
 #             du = dz[i, j] * (1f0 - u[i, j]) * u[i, j]      # ∇pσ(u[i, j])
 #             dgh[i, j] += du
 #             db[i] += du
