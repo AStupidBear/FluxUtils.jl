@@ -71,19 +71,6 @@ function (m::FLSTMCell{<:Array})(h_, x)
     return (h, c), h
 end
 
-function (m::FLSTMCell)(h_, x)
-    h, c = h_ # TODO: nicer syntax on 0.7
-    b, o = m.b, size(h, 1)
-    g = m.Wi * x .+ m.Wh * h .+ b
-    input = pσ.(gate(g, o, 1))
-    forget = pσ.(gate(g, o, 2))
-    cell = ptanh.(gate(g, o, 3))
-    output = pσ.(gate(g, o, 4))
-    c = forget .* c .+ input .* cell
-    h′ = output .* ptanh.(c)
-    return (h′, c), h′
-end
-
 hidden(m::FLSTMCell) = (m.h, m.c)
 
 @treelike FLSTMCell
@@ -133,16 +120,6 @@ function (m::SGRUCell{<:Array})(h, x)
     return h, h
 end
 
-function (m::SGRUCell)(h, x)
-    b, o = m.b, size(h, 1)
-    gx, gh = m.Wi * x, m.Wh * h
-    r = pσ.(gate(gh, o, 1) .+ gate(b, o, 1))
-    z = pσ.(gate(gh, o, 2) .+ gate(b, o, 2))
-    h̃ = ptanh.(gx .+ r .* gate(gh, o, 3) .+ gate(b, o, 3))
-    h′ = (1 .- z) .* h̃ .+ z .* h
-    return h′, h′
-end
-
 hidden(m::SGRUCell) = m.h
 
 @treelike SGRUCell
@@ -188,15 +165,6 @@ function (m::MGUCell{<:Array})(h, x)
     return h, h
 end
 
-function (m::MGUCell)(h, x)
-    b, o = m.b, size(h, 1)
-    gx, gh = m.Wi * x, m.Wh * h
-    r = z = pσ.(gate(gx, o, 1) .+ gate(gh, o, 1) .+ gate(b, o, 1))
-    h̃ = ptanh.(gate(gx, o, 2) .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
-    h′ = (1 .- z) .* h̃ .+ z .* h
-    return h′, h′
-end
-
 hidden(m::MGUCell) = m.h
 
 @treelike MGUCell
@@ -240,15 +208,6 @@ function (m::SMGUCell{<:Array})(h, x)
         h[i, j] = (1f0 - z) * h̃ + z * h[i, j]
     end
     return h, h
-end
-
-function (m::SMGUCell)(h, x)
-    b, o = m.b, size(h, 1)
-    gx, gh = m.Wi * x, m.Wh * h
-    r = z = pσ.(gate(gh, o, 1) .+ gate(b, o, 1))
-    h̃ = ptanh.(gx .+ r .* gate(gh, o, 2) .+ gate(b, o, 2))
-    h′ = (1f0 .- z) .* h̃ .+ z .* h
-    return h′, h′
 end
 
 hidden(m::SMGUCell) = m.h
