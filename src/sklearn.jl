@@ -6,14 +6,17 @@ export FluxNet, xy2data, datagen, part
 
 abstract type FluxNet end
 
-myrank() = max(0, myid() - 2)
+myrank() = myid() - 2
 
 worldsize() = nworkers()
 
-function part(x)
+part(x) = part(x, myrank() + 1, worldsize())
+
+function part(x, n, N)
+    n < 1 && return x
     d = argmax(size(x))
-    is = chunk(axes(x, d), worldsize())
-    i = UnitRange(extrema(is[myrank() + 1])...)
+    is = chunk(axes(x, d), N)
+    i = UnitRange(extrema(is[n])...)
     inds = ntuple(x -> x == d ? i : (:), ndims(x))
     view(x, inds...)
 end
