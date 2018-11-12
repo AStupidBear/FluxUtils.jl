@@ -1,7 +1,6 @@
 export forwardmode, float32, float64, gpu32
 
-using Flux, Adapt
-Adapt.adapt_(::Type{<:Array{T}}, xs::AbstractArray) where T <: AbstractFloat = convert(Array{T}, xs)
+Flux.adapt(::Type{<:Array{T}}, xs::AbstractArray) where T <: AbstractFloat = convert(Array{T}, xs)
 Flux.mapleaves(f, x::AbstractArray{<:Number}) = f(x)
 
 float32(m) = mapleaves(x -> Flux.adapt(Array{Float32}, x), m)
