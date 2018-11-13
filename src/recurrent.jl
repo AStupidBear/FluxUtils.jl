@@ -15,10 +15,7 @@ end
 function (a::Dense{<:Any, <:Array})(x::AbstractArray)
     W, b, σ = a.W, a.b, a.σ
     y = W * x
-    for j in 1:size(y, 2), i in 1:size(y, 1)
-        y[i, j] = σ(y[i, j] + b[i])
-    end
-    return y
+    y .= σ.(y .+ b)
 end
 
 # FLSTM
@@ -208,14 +205,14 @@ hidden(m::SMGUCell) = m.h
 
 @treelike SMGUCell
 
-Base.show(io::IO, l::SMGUCell) = 
+Base.show(io::IO, l::SMGUCell) =
     print(io, "SMGUCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 2, ")")
 
 SMGU(a...; ka...) = Recur(SMGUCell(a...; ka...))
 
 namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames(typeof(m)), children(m))
 
-# using Flux: data 
+# using Flux: data
 # using Flux.Tracker: track, @grad
 
 # istrain(m, args...) = any(x -> isa(x, TrackedArray), (m.Wi, m.Wh, m.b, args...))
