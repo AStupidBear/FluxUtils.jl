@@ -1,7 +1,7 @@
 using Flux: glorot_uniform, param, initn, gate, Recur, NNlib.@fix, TrackedArray
 import Flux: hidden
 
-export FLSTM, SGRU, MGU, SMGU
+export FLSTM, SGRU, MGU, SMGU, hBatch
 
 hBatch(x::AbstractVector, h::Vector) = h
 hBatch(x::AbstractMatrix, h::Vector{T}) where T = repeat(h, 1, size(x, 2))
