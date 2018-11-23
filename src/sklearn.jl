@@ -6,9 +6,7 @@ export FluxNet, xy2data, datagen, part
 
 abstract type FluxNet end
 
-part(x) = part(x, myid() - 1, nworkers())
-
-function part(x, n, N)
+function part(x, n = myid() - 1, N = nworkers())
     n < 1 && return x
     d = argmax(size(x))
     is = chunk(axes(x, d), N)
@@ -16,6 +14,8 @@ function part(x, n, N)
     inds = ntuple(x -> x == d ? i : (:), ndims(x))
     view(x, inds...)
 end
+
+mpipart(x) = part(x, myid(), nprocs())
 
 function rebatch(x, batchsize)
     nb, nt = size(x, 2), size(x, 3)
@@ -28,9 +28,8 @@ function rebatch(x, batchsize)
     PermutedDimsArray(xr, [1, 3, 2])
 end
 
-function datagen(x, batchsize, seqsize; parl = true)
-    x = parl ? part(x) : x
-    x = rebatch(x, batchsize)
+function datagen(x, batchsize, seqsize; partf = part)
+    x = rebatch(partf(x), batchsize)
     titr = indbatch(axes(x, 3), seqsize)
     bitr = indbatch(axes(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
@@ -40,9 +39,8 @@ function datagen(x, batchsize, seqsize; parl = true)
     end
 end
 
-function datagen(x, batchsize; parl = true)
-    x = parl ? part(x) : x
-    x = rebatch(x, batchsize)
+function datagen(x, batchsize; partf = part)
+    x = rebatch(partf(x), batchsize)
     titr = axes(x, 3)
     bitr = indbatch(axes(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
@@ -53,17 +51,17 @@ end
 
 datagen(x::Tuple, args...; kwargs...) = zip(datagen.(x, args...; kwargs...)...)
 
-function fit!(m::FluxNet, x, y; sample_weight = nothing, parl = true, cb = [])
+function fit!(m::FluxNet, x, y; sample_weight = nothing, cb = [])
     checkdims(x, y)
-    dx = datagen(x, m.batchsize, m.seqsize, parl = parl)
-    dy = datagen(y, m.batchsize, m.seqsize, parl = parl)
+    dx = datagen(x, m.batchsize, m.seqsize, partf = mpipart)
+    dy = datagen(y, m.batchsize, m.seqsize, partf = mpipart)
     if sample_weight == nothing
         data = zip(dx, dy)
     else
         checkdims(sample_weight)
         w = sample_weight
         rmul!(w, length(w) / sum(w))
-        dw = datagen(w, m.batchsize, m.seqsize)
+        dw = datagen(w, m.batchsize, m.seqsize, partf = mpipart)
         data = zip(dx, dy, dw)
     end
     Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
@@ -72,8 +70,8 @@ end
 function predict!(ŷ, m::FluxNet, x; reset = true)
     checkdims(x, ŷ)
     fill!(ŷ, 0f0)
-    dx = datagen(x, m.batchsize, parl = false)
-    dy = datagen(ŷ, m.batchsize, parl = false)
+    dx = datagen(x, m.batchsize, partf = identity)
+    dy = datagen(ŷ, m.batchsize, partf = identity)
     mf = reset ? forwardmode(m) : m
     for (xi, yi) in zip(dx, dy)
         copyto!(yi, forwardmode(cpu(mf(gpu32(xi)))))
