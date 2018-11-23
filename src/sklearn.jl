@@ -6,11 +6,7 @@ export FluxNet, xy2data, datagen, part
 
 abstract type FluxNet end
 
-myrank() = myid() - 2
-
-worldsize() = nworkers()
-
-part(x) = part(x, myrank() + 1, worldsize())
+part(x) = part(x, myid() - 1, nworkers())
 
 function part(x, n, N)
     n < 1 && return x

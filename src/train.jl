@@ -1,15 +1,14 @@
 export plog, @pepochs
 
 function plog(name, val, color = :blue)
-    str = @sprintf("Rank: %d, %s: %.4f\n", myrank(), name, val)
+    str = @sprintf("worker: %d, %s: %.4f\n", myid(), name, val)
     printstyled(str, color = color)
     flush(stdout)
 end
 
 macro pepochs(n, ex)
   :(for i = 1:$(esc(n))
-      info("Rank: $(myrank()), Epoch $i")
-      flush(stdout)
+      plog("epoch", i, :green)
       $(esc(ex))
       cugc()
     end)
@@ -29,12 +28,12 @@ function Flux.Optimise.train!(m, loss, data, opt; logintvl = 10, cb = [])
         end
         ltot += Flux.data(l)
         nbatch += 1
-        logcb("Loss", l)
+        logcb("loss", l)
         isinf(l) && error("Loss is Inf")
         isnan(l) && error("Loss is NaN")
         @interrupts back!(l)
         opt()
         cb() == :stop && break
     end
-    plog("AvgLoss", ltot / nbatch, :yellow)
+    plog("avgloss", ltot / nbatch, :yellow)
 end

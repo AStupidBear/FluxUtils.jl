@@ -1,17 +1,13 @@
 using Flux.Optimise: Param, call
 
-myrank() = MPI.Comm_rank(MPI.COMM_WORLD)
-
-worldsize() = MPI.Comm_size(MPI.COMM_WORLD)
-
 function syncgrad(p::Param)
     function ()
         recvbuf = zeros(p.Δ)
         MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
-        p.Δ .= recvbuf ./ worldsize()
+        p.Δ .= recvbuf ./ nworkers()
     end
 end
-    
+
 function Flux.Optimise.optimiser(ps, fs...)
     fs = (syncgrad, fs...)
     ps = [Param(p) for p in ps]
