@@ -3,9 +3,10 @@ import Flux: hidden
 
 export FLSTM, SGRU, MGU, SMGU, hBatch
 
-hBatch(x::AbstractVector, h::Vector) = h
-hBatch(x::AbstractMatrix, h::Vector{T}) where T = repeat(h, 1, size(x, 2))
-hBatch(x::AbstractMatrix, h::Matrix{T}) where T = size(h, 2) == 1 ? repeat(h, 1, size(x, 2)) : h
+hBatch(x::AbstractVector, h::AbstractVector) = h
+hBatch(x::AbstractMatrix, h::AbstractVector{T}) where T = repeat(h, 1, size(x, 2))
+hBatch(x::AbstractMatrix, h::AbstractMatrix{T}) where T =
+    size(h, 2) == size(x, 2) ? h : repeat(h[:, 1], 1, size(x, 2))
 
 function (a::Dense{<:Any, <:TrackedArray})(x::AbstractArray)
     W, b, σ = a.W, a.b, a.σ
