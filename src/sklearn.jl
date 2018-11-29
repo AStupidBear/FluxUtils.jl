@@ -6,12 +6,11 @@ export FluxNet, xy2data, datagen, part
 
 abstract type FluxNet end
 
-function part(x, n = myid() - 1, N = nworkers())
+function part(x, n = myid() - 1, N = nworkers(); dim = argmax(size(x)))
     n < 1 && return x
-    d = argmax(size(x))
-    is = chunk(axes(x, d), N)
+    is = chunk(axes(x, dim), N)
     i = UnitRange(extrema(is[n])...)
-    inds = ntuple(x -> x == d ? i : (:), ndims(x))
+    inds = ntuple(x -> x == dim ? i : (:), ndims(x))
     view(x, inds...)
 end
 
