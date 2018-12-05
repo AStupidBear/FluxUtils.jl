@@ -1,13 +1,13 @@
 export savenet, loadnet!
 
-function loadnet!(m, file)
-    BSON.@load file weights
+function loadnet!(m, src)
+    BSON.@load src weights
     Flux.loadparams!(m, weights)
     return nothing
 end
 
-function savenet(m, file)
+function savenet(dst, m)
     weights = Flux.data.(params(cpu(m)))
-    BSON.@save file weights
+    BSON.@save dst weights
     return nothing
 end
