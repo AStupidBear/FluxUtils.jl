@@ -67,7 +67,6 @@ end
     epochs::Int = 1
     batchsize::Int = 100
     seqsize::Int = 1000
-    reset::Bool = true
 end
 
 function fit!(est::Estimator, x, y, w = nothing; cb = [])
@@ -91,9 +90,8 @@ function predict!(ŷ, est::Estimator, x)
     fill!(ŷ, 0f0) # in case of partial copy
     dx = datagen(x, batchsize, partf = identity)
     dy = datagen(ŷ, batchsize, partf = identity)
-    mf = reset ? forwardmode(model) : model
     for (xi, yi) in zip(dx, dy)
-        copyto!(yi, forwardmode(cpu(mf(gpu32(xi)))))
+        copyto!(yi, notrack(cpu(model(gpu32(xi)))))
     end
     return ŷ
 end
