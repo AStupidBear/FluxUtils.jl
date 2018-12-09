@@ -2,13 +2,11 @@ using Base: Generator, product
 using Flux: chunk
 using Compat: argmax
 
-export FluxNet, xy2data, datagen, part
-
-abstract type FluxNet end
+export part, mpipart, rebatch, datagen, Estimator, TrainSpec
 
 function part(x, n = myid() - 1, N = nworkers(); dim = ndims(x))
     (n < 1 || size(x)[dim] < N) && return x
-    is = chunk(axes(x, dim), N)
+    is = chunk(1:size(x, dim), N)
     i = UnitRange(extrema(is[n])...)
     inds = ntuple(x -> x == dim ? i : (:), ndims(x))
     view(x, inds...)
@@ -29,8 +27,8 @@ end
 
 function datagen(x, batchsize, seqsize; partf = part)
     x = rebatch(partf(x), batchsize)
-    titr = indbatch(axes(x, 3), seqsize)
-    bitr = indbatch(axes(x, 2), batchsize)
+    titr = indbatch(1:size(x, 3), seqsize)
+    bitr = indbatch(1:size(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         ts, bs = args
         xs = [gpu32(x[:, bs, t]) for t in ts]
@@ -40,8 +38,8 @@ end
 
 function datagen(x, batchsize; partf = part)
     x = rebatch(partf(x), batchsize)
-    titr = axes(x, 3)
-    bitr = indbatch(axes(x, 2), batchsize)
+    titr = 1:size(x, 3)
+    bitr = indbatch(1:size(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         t, bs = args
         view(x, :, bs, t)
@@ -50,36 +48,52 @@ end
 
 datagen(x::Tuple, args...; kwargs...) = zip(datagen.(x, args...; kwargs...)...)
 
-function fit!(m::FluxNet, x, y; sample_weight = nothing, cb = [])
-    checkdims(x, y)
-    dx = datagen(x, m.batchsize, m.seqsize, partf = mpipart)
-    dy = datagen(y, m.batchsize, m.seqsize, partf = mpipart)
-    if sample_weight == nothing
-        data = zip(dx, dy)
-    else
-        checkdims(sample_weight)
-        w = sample_weight
-        rmul!(w, length(w) / sum(w))
-        dw = datagen(w, m.batchsize, m.seqsize, partf = mpipart)
-        data = zip(dx, dy, dw)
-    end
-    Flux.@epochs m.epochs Flux.train!(m, m.loss, data, m.opt; cb = [cugc, cb...])
-end
-
-function predict!(ŷ, m::FluxNet, x; reset = true)
-    checkdims(x, ŷ)
-    fill!(ŷ, 0f0)
-    dx = datagen(x, m.batchsize, partf = identity)
-    dy = datagen(ŷ, m.batchsize, partf = identity)
-    mf = reset ? forwardmode(m) : m
-    for (xi, yi) in zip(dx, dy)
-        copyto!(yi, forwardmode(cpu(mf(gpu32(xi)))))
-    end
-    return ŷ
-end
-
 Base.fill!(As::Tuple, x) = fill!.(As, x)
 
 Compat.copyto!(dests::Tuple, srcs::Tuple) = copyto!.(dests, srcs)
 
 checkdims(xs...) = Flux.prefor(x -> x isa AbstractArray && ndims(x) != 3 && error("ndims should be 3"), xs)
+
+mutable struct Estimator{M, L, O, C}
+    model::M
+    loss::L
+    opt::O
+    spec::C
+end
+
+@treelike Estimator
+
+@with_kw mutable struct TrainSpec
+    epochs::Int = 1
+    batchsize::Int = 100
+    seqsize::Int = 1000
+    reset::Bool = true
+end
+
+function fit!(est::Estimator, x, y, w = nothing; cb = [])
+    @unpack model, loss, opt, spec = est
+    @unpack epochs, batchsize, seqsize = spec
+    dx = datagen(x, batchsize, seqsize, partf = mpipart)
+    dy = datagen(y, batchsize, seqsize, partf = mpipart)
+    if w == nothing
+        data = zip(dx, dy)
+    else
+        rmul!(w, 1 / mean(w))
+        dw = datagen(w, batchsize, seqsize, partf = mpipart)
+        data = zip(dx, dy, dw)
+    end
+    Flux.@epochs epochs Flux.train!(model, loss, data, opt; cb = [cugc, cb...])
+end
+
+function predict!(ŷ, est::Estimator, x)
+    @unpack model, spec = est
+    @unpack batchsize, reset = spec
+    fill!(ŷ, 0f0) # in case of partial copy
+    dx = datagen(x, batchsize, partf = identity)
+    dy = datagen(ŷ, batchsize, partf = identity)
+    mf = reset ? forwardmode(model) : model
+    for (xi, yi) in zip(dx, dy)
+        copyto!(yi, forwardmode(cpu(mf(gpu32(xi)))))
+    end
+    return ŷ
+end
