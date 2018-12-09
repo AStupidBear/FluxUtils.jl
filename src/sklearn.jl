@@ -19,7 +19,7 @@ function rebatch(x, batchsize)
     n = batchsize ÷ nb
     n > 1 || return x
     nt′, nb′ = nt ÷ n, nb * n
-    xt = view(x, :, :, OneTo(nt′ * n))
+    xt = view(x, :, :, 1:(nt′ * n))
     xp = PermutedDimsArray(xt, [1, 3, 2])
     xr = reshape(xp, :, nt′, nb′)
     PermutedDimsArray(xr, [1, 3, 2])
