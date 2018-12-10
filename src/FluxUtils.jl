@@ -2,10 +2,10 @@ __precompile__(true)
 
 module FluxUtils
 
+using Flux, BSON, Adapt, Requires, Utils, ProgressMeter
+
 using Compat, Compat.Printf, Compat.Distributed, Compat.LinearAlgebra
 using Compat: axes, rmul!
-
-using Flux, BSON, Adapt, Requires, Utils
 
 macro treelike(ex)
     @static if VERSION >= v"0.7"

@@ -1,5 +1,5 @@
 function plog(name, val, color = :blue)
-    str = @sprintf("worker: %d, %s: %.4f\n", myid(), name, val)
+    str = @sprintf("\nworker: %d, %s: %.4f\n", myid(), name, val)
     printstyled(str, color = color)
     flush(stdout)
 end

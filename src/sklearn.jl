@@ -2,7 +2,7 @@ using Base: Generator, product
 using Flux: chunk
 using Compat: argmax
 
-export part, mpipart, rebatch, datagen, Estimator, TrainSpec
+export part, mpipart, rebatch, datagen, Estimator, TrainSpec, seqloss
 
 function part(x, n = myid() - 1, N = nworkers(); dim = ndims(x))
     (n < 1 || size(x)[dim] < N) && return x
@@ -101,4 +101,15 @@ function predict!(ŷ, est::Estimator, x)
         copyto!(yi, notrack(cpu(model(gpu32(xi)))))
     end
     return ŷ
+end
+
+function seqloss(loss)
+    function (m, xs, ys)
+        l, T = 0f0, length(xs)
+        for t in 1:T
+            x, y = xs[t], ys[t]
+            l += loss(m(x), y)
+        end
+        return l / T
+    end
 end
