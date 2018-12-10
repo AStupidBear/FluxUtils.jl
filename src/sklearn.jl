@@ -69,9 +69,10 @@ end
     seqsize::Int = 1000
 end
 
-function fit!(est::Estimator, x, y, w = nothing; cb = [])
+function fit!(est::Estimator, x, y, w = nothing; kws...)
     @unpack model, loss, opt, spec = est
     @unpack epochs, batchsize, seqsize = spec
+    haskey(kws, :epochs) && @unpack epochs = kws
     dx = datagen(x, batchsize, seqsize, partf = mpipart)
     dy = datagen(y, batchsize, seqsize, partf = mpipart)
     if w == nothing
@@ -81,12 +82,18 @@ function fit!(est::Estimator, x, y, w = nothing; cb = [])
         dw = datagen(w, batchsize, seqsize, partf = mpipart)
         data = zip(dx, dy, dw)
     end
-    Flux.@epochs epochs Flux.train!(model, loss, data, opt; cb = [cugc, cb...])
+    local l, ∇l
+    for n in 1:epochs
+        plog("epoch", n, :yellow)
+        l, ∇l = Flux.train!(model, loss, data, opt; kws...)
+    end
+    return l, ∇l
 end
 
 function predict!(ŷ, est::Estimator, x)
     @unpack model, spec = est
     @unpack batchsize, reset = spec
+    model = notrack(model)
     fill!(ŷ, 0f0) # in case of partial copy
     dx = datagen(x, batchsize, partf = identity)
     dy = datagen(ŷ, batchsize, partf = identity)
