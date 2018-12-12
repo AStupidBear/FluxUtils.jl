@@ -92,7 +92,7 @@ end
 
 function predict!(ŷ, est::Estimator, x)
     @unpack model, spec = est
-    @unpack batchsize, reset = spec
+    @unpack batchsize, seqsize = spec
     model = notrack(model)
     fill!(ŷ, 0f0) # in case of partial copy
     dx = datagen(x, batchsize, partf = identity)
