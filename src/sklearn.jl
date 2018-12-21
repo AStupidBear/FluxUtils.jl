@@ -17,7 +17,7 @@ mpipart(x) = part(x, myid(), nprocs())
 function rebatch(x, batchsize)
     nb, nt = size(x, 2), size(x, 3)
     n = batchsize ÷ nb
-    n > 1 || return x
+    (n <= 1 || nt <= n) && return x
     nt′, nb′ = nt ÷ n, nb * n
     xt = view(x, :, :, 1:(nt′ * n))
     xp = PermutedDimsArray(xt, [1, 3, 2])
