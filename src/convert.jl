@@ -4,6 +4,7 @@ export notrack, float32, float64, gpu32
 
 if isdefined(Adapt, :adapt_structure)
     Adapt.adapt_structure(::Type{<:Array{T}}, xs::AbstractArray) where T <: AbstractFloat = convert(Array{T}, xs)
+    Adapt.adapt_structure(::Type{<:Array{T}}, xs::SubArray) where T <: AbstractFloat = convert(Array{T}, xs)
 elseif isdefined(Adapt, :adapt_)
     Adapt.adapt_(::Type{<:Array{T}}, xs::AbstractArray) where T <: AbstractFloat = convert(Array{T}, xs)
 end
