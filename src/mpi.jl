@@ -2,7 +2,7 @@ using Flux.Optimise: Param, call
 
 function syncgrad(p::Param)
     function ()
-        recvbuf = zeros(p.Δ)
+        recvbuf = zero(p.Δ)
         MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
         p.Δ .= recvbuf ./ nworkers()
     end
