@@ -49,7 +49,7 @@ datagen(x::Tuple, args...; kwargs...) = zip(datagen.(x, args...; kwargs...)...)
 
 Base.fill!(As::Tuple, x) = fill!.(As, x)
 
-copyto!(dests::Tuple, srcs::Tuple) = copyto!.(dests, srcs)
+Base.copyto!(dests::Tuple, srcs::Tuple) = copyto!.(dests, srcs)
 
 checkdims(xs...) = Flux.prefor(x -> x isa AbstractArray && ndims(x) != 3 && error("ndims should be 3"), xs)
 
