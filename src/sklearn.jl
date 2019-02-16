@@ -83,7 +83,7 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     end
     local l, ∇l
     for n in 1:epochs
-        desc = nworkers() == 1 ? @sprintf("epoch-%d ", n) :
+        desc = nprocs() == 1 ? @sprintf("epoch-%d ", n) :
                 @sprintf("worker-%d,epoch-%d ", myid(), n)
         l, ∇l = Flux.train!(model, loss, data, opt; desc = desc, kws...)
     end
