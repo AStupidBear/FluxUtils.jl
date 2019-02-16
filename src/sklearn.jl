@@ -69,7 +69,7 @@ end
 end
 
 function fit!(est::Estimator, x, y, w = nothing; kws...)
-    inmpi() && syncparam!(est)
+    @isdefined(MPI) && syncparam!(est)
     @unpack model, loss, opt, spec = est
     @unpack epochs, batchsize, seqsize = spec
     haskey(kws, :epochs) && @unpack epochs = kws
