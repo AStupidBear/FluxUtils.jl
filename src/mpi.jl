@@ -5,7 +5,7 @@ function syncgrad(p::Param)
     function ()
         recvbuf = zero(p.Δ)
         MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
-        p.Δ .= recvbuf ./ MPI.Comm_size
+        p.Δ .= recvbuf ./ MPI.Comm_size(MPI.COMM_WORLD)
     end
 end
 
