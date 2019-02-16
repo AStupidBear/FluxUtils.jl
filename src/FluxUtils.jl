@@ -4,8 +4,7 @@ module FluxUtils
 
 using Flux, BSON, Adapt, Requires, Utils, ProgressMeter
 
-using Compat, Compat.Printf, Compat.Distributed, Compat.LinearAlgebra
-using Compat: axes, rmul!
+using Printf, Distributed, LinearAlgebra
 
 macro treelike(ex)
     @static if VERSION >= v"0.7"

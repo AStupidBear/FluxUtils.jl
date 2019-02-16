@@ -1,6 +1,5 @@
 using Base: Generator, product
 using Flux: chunk
-using Compat: argmax
 
 export part, mpipart, rebatch, datagen, Estimator, TrainSpec, seqloss
 
@@ -50,7 +49,7 @@ datagen(x::Tuple, args...; kwargs...) = zip(datagen.(x, args...; kwargs...)...)
 
 Base.fill!(As::Tuple, x) = fill!.(As, x)
 
-Compat.copyto!(dests::Tuple, srcs::Tuple) = copyto!.(dests, srcs)
+copyto!(dests::Tuple, srcs::Tuple) = copyto!.(dests, srcs)
 
 checkdims(xs...) = Flux.prefor(x -> x isa AbstractArray && ndims(x) != 3 && error("ndims should be 3"), xs)
 
@@ -84,8 +83,9 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     end
     local l, ∇l
     for n in 1:epochs
-        plog("epoch", n, :yellow)
-        l, ∇l = Flux.train!(model, loss, data, opt; kws...)
+        desc = nworkers() == 1 ? @sprintf("epoch-%d ", n) :
+                @sprintf("worker-%d,epoch-%d ", myid(), n)
+        l, ∇l = Flux.train!(model, loss, data, opt; desc = desc, kws...)
     end
     return l, ∇l
 end
