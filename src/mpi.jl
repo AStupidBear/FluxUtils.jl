@@ -1,4 +1,5 @@
 using Flux.Optimise: Param, call
+export syncparam!
 
 function syncgrad(p::Param)
     function ()
@@ -6,6 +7,12 @@ function syncgrad(p::Param)
         MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
         p.Δ .= recvbuf ./ MPI.Comm_size
     end
+end
+
+function syncparam!(m)
+    v = net2vec(m)
+    MPI.Bcast!(v, 0, MPI.COMM_WORLD)
+    vec2net!(m, v)
 end
 
 function Flux.Optimise.optimiser(ps, fs...)
