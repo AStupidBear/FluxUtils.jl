@@ -4,8 +4,6 @@ module FluxUtils
 
 using Flux, BSON, Adapt, Requires, Utils, ProgressMeter
 
-using Printf, Distributed, LinearAlgebra
-
 macro treelike(ex)
     @static if VERSION >= v"0.7"
         esc(:(Flux.@treelike($ex)))
