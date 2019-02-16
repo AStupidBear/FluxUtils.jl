@@ -1,10 +1,16 @@
-function plog(str; kws...)
+
+export plog
+
+function plog(str::AbstractString; kws...)
     str = @sprintf("worker: %d, %s\n", myid(), str)
     printstyled(str; kws...)
     flush(stdout)
 end
 
-plog(name, val; kws...) = plog(@sprintf("%s: %.4f", name, val); kws...)
+function plog(nt::NamedTuple; kws...)
+    strs = [@sprintf("%s: %.4f", k, v) for (k, v) in pairs(nt)]
+    plog(join(strs, ", "); kws...)
+end
 
 function Flux.Optimise.train!(m, loss, data, opt; runback = true, 
                         runopt = true, cb = [], desc = "", kws...)
