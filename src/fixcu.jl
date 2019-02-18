@@ -1,4 +1,4 @@
-cugc() = (gc(true); CuArrays.reclaim(true))
+cugc() = (GC.gc(true); CuArrays.reclaim(true))
 
 function Base.:(*)(A::CuArrays.CuMatrix, B::Flux.OneHotMatrix{CuArrays.CuArray{Flux.OneHotVector,1}})
     I = CuArrays.CuArray{UInt32, 1}(B.data.buf, B.data.offset, 2 .* B.data.dims)[1:2:end]
