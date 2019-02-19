@@ -65,6 +65,7 @@ function Base.show(io::IO, est::Estimator)
     println(io, "model:")
     for s in fieldnames(typeof(est.model))
         x = getfield(est.model, s)
+        x = x == nothing ? "nithing" : x
         println(io, ' '^2, s, ": ", x)
     end
     println(io, "loss: ", repr("text/plain", est.loss))
