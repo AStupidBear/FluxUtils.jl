@@ -82,10 +82,11 @@ end
 end
 
 function fit!(est::Estimator, x, y, w = nothing; kws...)
-    @isdefined(MPI) && syncparam!(est)
     @unpack model, loss, opt, spec = est
     @unpack epochs, batchsize, seqsize = spec
     haskey(kws, :epochs) && @unpack epochs = kws
+    runopt = haskey(kws, :runopt) ? kws[:runopt] : true
+    runopt && @isdefined(MPI) && syncparam!(est)
     dx = datagen(x, batchsize, seqsize, partf = mpipart)
     dy = datagen(y, batchsize, seqsize, partf = mpipart)
     if w == nothing
