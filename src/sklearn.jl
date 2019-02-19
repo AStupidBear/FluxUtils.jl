@@ -60,6 +60,18 @@ mutable struct Estimator{M, L, O, C}
     spec::C
 end
 
+function Base.show(io::IO, est::Estimator)
+    io = IOContext(io, :compact => true)
+    println(io, "model:")
+    for s in fieldnames(typeof(est.model))
+        x = getfield(est.model, s)
+        println(io, ' '^2, s, ": ", x)
+    end
+    println(io, "loss: ", repr("text/plain", est.loss))
+    println(io, "opt: ", repr("text/plain", est.opt))
+    println(io, "spec: ", est.spec)
+end
+
 @treelike Estimator
 
 @with_kw mutable struct TrainSpec
