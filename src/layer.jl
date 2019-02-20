@@ -25,7 +25,8 @@ GaussianNoise(stddev) = GaussianNoise(stddev, true)
 
 function (a::GaussianNoise)(x)
   a.active || return x
-  y = rand!(similar(x))
+  a.stddev == 0 && return x
+  y = lmul!(a.stddev, randn!(similar(x)))
   return x .+ y
 end
 
