@@ -7,8 +7,10 @@ function plog(str::AbstractString; kws...)
     flush(stdout)
 end
 
+trunc4(x) = isa(x, AbstractFloat) ? trunc(x, digits = 4) : x
+
 function plog(nt::NamedTuple; kws...)
-    strs = [@sprintf("%s: %.4f", k, v) for (k, v) in pairs(nt)]
+    strs = [@sprintf("%s: %s", k, trunc4(v)) for (k, v) in pairs(nt)]
     plog(join(strs, ", "); kws...)
 end
 
