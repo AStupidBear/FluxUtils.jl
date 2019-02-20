@@ -1,4 +1,5 @@
-export DenseReLU
+export DenseReLU, GaussianNoise
+
 DenseReLU(in, out; ka...) = Dense(in, out, relu; ka...)
 
 function Flux.RNN(in::Integer, out::Integer, nlayers::Integer, 
@@ -14,3 +15,18 @@ function Flux.RNN(in::Integer, out::Integer, nlayers::Integer,
     end
     Chain(layers...)
 end
+
+mutable struct GaussianNoise{F}
+  stddev::F
+  active::Bool
+end
+
+GaussianNoise(stddev) = GaussianNoise(stddev, true)
+
+function (a::GaussianNoise)(x)
+  a.active || return x
+  y = rand!(similar(x))
+  return x .+ y
+end
+
+Flux._testmode!(a::GaussianNoise, test) = (a.active = !test)
