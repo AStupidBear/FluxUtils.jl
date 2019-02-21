@@ -54,9 +54,23 @@ end
 
 export weights
 function weights(m)
-    seen = IdSet()
-    Flux.prefor(m, seen = seen) do x
-      x isa AbstractArray && push!(seen, x)
+    ws, seen = [], IdSet()
+    Flux.prefor(m, seen = seen) do w
+        x isa AbstractArray || return
+        push!(seen, w)
+        push!(ws, w)
     end
-    return collect(seen)
+    return ws
+end
+
+export namedweights
+function namedweights(m)
+    ws, seen = [], IdSet()
+    mname = Symbol(typename(m))
+    namedprefor((mname, m), seen = seen) do name, w
+        w isa AbstractArray || return
+        push!(seen, w)
+        push!(ws, (name, w))
+    end
+    return ws
 end
