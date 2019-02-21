@@ -56,7 +56,7 @@ export weights
 function weights(m)
     ws, seen = [], IdSet()
     Flux.prefor(m, seen = seen) do w
-        x isa AbstractArray || return
+        w isa AbstractArray || return
         push!(seen, w)
         push!(ws, w)
     end
