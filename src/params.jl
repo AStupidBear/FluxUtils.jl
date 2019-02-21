@@ -51,3 +51,12 @@ function loadstates!(m, xs)
     copyto!(Flux.data(s), Flux.data(x))
     end
 end
+
+export weights
+function weights(m)
+    seen = IdSet()
+    Flux.prefor(m, seen = seen) do x
+      x isa AbstractArray && push!(seen, x)
+    end
+    return collect(seen)
+end
