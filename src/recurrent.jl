@@ -73,7 +73,7 @@ hidden(m::FLSTMCell) = (m.h, m.c)
 
 @treelike FLSTMCell
 
-namedchildren(m::FLSTMCell) = zip(fieldnames(m), children(m))
+namedchildren(m::FLSTMCell) = zip(fieldnames(typeof(m)), children(m))
 
 Base.show(io::IO, l::FLSTMCell) =
     print(io, "FLSTMCell(", size(l.Wi, 2), ", ", size(l.Wh, 1) ÷ 4, ")")
