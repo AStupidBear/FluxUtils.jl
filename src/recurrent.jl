@@ -1,4 +1,4 @@
-using Flux: glorot_uniform, param, initn, gate, Recur, NNlib.@fix, TrackedArray
+using Flux: glorot_uniform, param, gate, Recur, NNlib.@fix, TrackedArray
 import Flux: hidden
 
 export FLSTM, SGRU, MGU, SMGU, hBatch
@@ -30,8 +30,8 @@ mutable struct FLSTMCell{A, V}
 end
 
 function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform)
-    cell = FLSTMCell(param(init(4out, in)), param(init(4out, out)), param(zeros(4out)),
-                    param(initn(out)), param(initn(out)))
+    cell = FLSTMCell(param(init(4out, in)), param(init(4out, out)), param(init(4out)),
+                    param(zeros(out)), param(zeros(out)))
     cell.b.data[gate(out, 2)] .= 1
     return cell
 end
@@ -91,7 +91,7 @@ end
 
 SGRUCell(in, out; init = glorot_uniform) =
     SGRUCell(param(init(out, in)), param(init(3out, out)),
-            param(zeros(3out)), param(initn(out)))
+            param(zeros(3out)), param(zeros(out)))
 
 function (m::SGRUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
@@ -136,7 +136,7 @@ end
 
 MGUCell(in, out; init = glorot_uniform) =
     MGUCell(param(init(2out, in)), param(init(2out, out)),
-            param(zeros(2out)), param(initn(out)))
+            param(zeros(2out)), param(zeros(out)))
 
 function (m::MGUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
@@ -179,7 +179,7 @@ end
 
 SMGUCell(in, out; init = glorot_uniform) =
     SMGUCell(param(init(out, in)), param(init(2out, out)),
-            param(zeros(2out)), param(initn(out)))
+            param(zeros(2out)), param(zeros(out)))
 
 function (m::SMGUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
