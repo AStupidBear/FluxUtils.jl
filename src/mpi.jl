@@ -1,13 +1,13 @@
-using Flux.Optimise: Param, call
 export syncparam!
 
-function syncgrad(p::Param)
-    function ()
-        recvbuf = zero(p.Δ)
-        MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
-        p.Δ .= recvbuf ./ MPI.Comm_size(MPI.COMM_WORLD)
-    end
+function Flux.update!(opt, x, x̄)
+    Δ = Flux.data(x̄)
+    Δ′ = zero(Δ)
+    MPI.Allreduce!(Δ, Δ′, MPI.SUM, MPI.COMM_WORLD)
+    Δ .= Δ′ ./ MPI.Comm_size(MPI.COMM_WORLD)
+    update!(x, -apply!(opt, x, Δ))
 end
+
 
 function syncparam!(m)
     v = net2vec(m)
@@ -15,12 +15,24 @@ function syncparam!(m)
     vec2net!(m, v)
 end
 
-function Flux.Optimise.optimiser(ps, fs...)
-    fs = (syncgrad, fs...)
-    ps = [Param(p) for p in ps]
-    fs = map(ps) do p
-        os = map(f -> f(p), fs)
-        () -> foreach(call, os)
+if VERSION < v"1.0"
+    using Flux.Optimise: Param, call
+
+    function syncgrad(p::Param)
+        function ()
+            recvbuf = zero(p.Δ)
+            MPI.Allreduce!(p.Δ, recvbuf, MPI.SUM, MPI.COMM_WORLD)
+            p.Δ .= recvbuf ./ MPI.Comm_size(MPI.COMM_WORLD)
+        end
     end
-    () -> foreach(call, fs)
+
+    function Flux.Optimise.optimiser(ps, fs...)
+        fs = (syncgrad, fs...)
+        ps = [Param(p) for p in ps]
+        fs = map(ps) do p
+            os = map(f -> f(p), fs)
+            () -> foreach(call, os)
+        end
+        () -> foreach(call, fs)
+    end
 end

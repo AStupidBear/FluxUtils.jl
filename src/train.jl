@@ -14,6 +14,19 @@ function plog(nt::NamedTuple; kws...)
     plog(join(strs, ", "); kws...)
 end
 
+@static if VERSION >= v"1.0"
+    using Flux.Optimise: StopException
+    macro interrupts(ex)
+    :(try $(esc(ex))
+        catch e
+        e isa StopException || rethrow()
+        throw(e)
+        end)
+    end
+else
+    using Flux.Optimise: @interrupts
+end
+
 function Flux.Optimise.train!(m, loss, data, opt; runback = true, 
                         runopt = true, cb = [], desc = "", kws...)
     cb = runall([cugc, cb...])
@@ -23,7 +36,7 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
     prog = Progress(length(data) + 1, desc = desc)
     for (n, dn) in enumerate(data)
         ln = loss(m, dn...)
-        next!(prog, showvalues = [(:loss, @sprintf("%.4f", ln))])
+        next!(prog, showvalues = [(:loss, trunc4(ln.data))])
         isinf(ln) && error("Loss is Inf")
         isnan(ln) && error("Loss is NaN")
         runback && @interrupts back!(ln)
@@ -34,7 +47,7 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
         Flux.truncate!(m)
         cb()
     end
-    l /= nb; rmul!(∇l, 1 / nb)
-    next!(prog, showvalues = [(:avgloss, @sprintf("%.4f", l))])
+    l, ∇l =  l / nb, ∇l ./ nb
+    next!(prog, showvalues = [(:avgloss, trunc4(l))])
     return l, ∇l
 end
