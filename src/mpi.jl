@@ -1,6 +1,8 @@
+import Flux.Optimise: update!, apply!
+
 export syncparam!
 
-function Flux.update!(opt, x, x̄)
+function Flux.Optimise.update!(opt, x, x̄)
     Δ = Flux.data(x̄)
     Δ′ = zero(Δ)
     MPI.Allreduce!(Δ, Δ′, MPI.SUM, MPI.COMM_WORLD)
