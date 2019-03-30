@@ -1,21 +1,25 @@
-using Flux.Optimise: optimiser, invdecay, descent, descentweightdecay, momentum, rmsprop, adam, clip, Param
-using Flux.Optimise: back!, runall, @progress, @interrupts
+using Flux.Optimise: IdDict, Optimiser, WeightDecay
+import Flux.Optimise: apply!
 
-Flux.Optimise.ADAMW(ps, η = 1f-3; β1 = 0.9f0, β2 = 0.999f0, ϵ = 1f-8, decay = 0f0, thresh = 0.5f0) =
-    optimiser(ps, p -> clip(p, thresh), p -> adam(p; η = η, β1 = β1, β2 = β2, ϵ = ϵ), 
-                p -> descentweightdecay(p, 1, decay))
-       
-Flux.Optimise.SGD(ps, η = 1f-1; decay = 0f0, thresh = 0.5f0) =
-    optimiser(ps, p -> clip(p, thresh), p -> invdecay(p, decay), p -> descent(p, η))
+export ADAMW32
 
-Flux.Optimise.Momentum(ps, η = 1f-2; ρ = 0.9f0, decay = 0f0, thresh = 0.5f0) =
-    optimiser(ps, p -> clip(p, thresh), p -> invdecay(p,decay), 
-                p -> momentum(p, ρ, η), p -> descent(p, 1))
+mutable struct ADAM32
+    eta::Float32
+    beta::Tuple{Float32, Float32}
+    state::IdDict
+end
 
-Flux.Optimise.RMSProp(ps, η = 1f-3; ρ = 0.9f0, ϵ = 1f-8, decay = 0f0, thresh = 0.5f0) =
-    optimiser(ps, p -> clip(p, thresh), p -> rmsprop(p; η = η, ρ = ρ, ϵ = ϵ), 
-                p -> invdecay(p, decay), p -> descent(p, 1))
+ADAM(η = 0.001, β = (0.9, 0.999)) = ADAM(η, β, IdDict())
 
-Flux.Optimise.ADAM(ps, η = 1f-3; β1 = 0.9f0, β2 = 0.999f0, ϵ = 1f-8, decay = 0f0, thresh = 0.5f0) =
-    optimiser(ps, p -> clip(p, thresh), p -> adam(p; η = η, β1 = β1, β2 = β2, ϵ = ϵ), 
-                p -> invdecay(p, decay), p -> descent(p, 1))
+function apply!(o::ADAM32, x, Δ)
+    η, β = o.eta, o.beta
+    mt, vt, βp = get!(o.state, x, (zero(x), zero(x), β))
+    @. mt = β[1] * mt + (1 - β[1]) * Δ
+    @. vt = β[2] * vt + (1 - β[2]) * Δ^2
+    @. Δ =  mt / (1 - βp[1]) / (√(vt / (1 - βp[2])) + ϵ) * η
+    o.state[x] = (mt, vt, βp .* β)
+    return Δ
+end
+
+ADAMW32(η = 0.001, decay = 0) =
+  Optimiser(ADAM32(η), WeightDecay(decay))
