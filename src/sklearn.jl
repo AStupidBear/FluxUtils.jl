@@ -30,7 +30,7 @@ function datagen(x, batchsize, seqsize; partf = part)
     bitr = indbatch(1:size(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         ts, bs = args
-        xs = [gpu32(x[:, bs, t]) for t in ts]
+        xs = [gpu(x[:, bs, t]) for t in ts]
         return xs
     end
 end
@@ -41,7 +41,7 @@ function datagen(x, batchsize; partf = part)
     bitr = indbatch(1:size(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         t, bs = args
-        view(x, :, bs, t)
+        gpu(x[:, bs, t])
     end
 end
 
@@ -113,7 +113,7 @@ function predict!(ŷ, est::Estimator, x)
     dx = datagen(x, batchsize, partf = identity)
     dy = datagen(ŷ, batchsize, partf = identity)
     for (xi, yi) in zip(dx, dy)
-        copyto!(yi, notrack(cpu(model(gpu32(xi)))))
+        copyto!(yi, notrack(cpu(model(xi))))
     end
     return ŷ
 end
