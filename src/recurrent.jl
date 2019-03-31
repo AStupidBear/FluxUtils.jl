@@ -9,17 +9,6 @@ hBatch(x::AbstractMatrix, h::AbstractVector{T}) where T = repeat(h, 1, size(x, 2
 hBatch(x::AbstractMatrix, h::AbstractMatrix{T}) where T =
     size(h, 2) == size(x, 2) ? h : repeat(h[:, 1], 1, size(x, 2))
 
-function (a::Dense{<:Any, <:TrackedArray})(x::AbstractArray)
-    W, b, σ = a.W, a.b, a.σ
-    σ.(W * x +ᵇ b)
-end
-
-function (a::Dense{<:Any, <:Array})(x::AbstractArray)
-    W, b, σ = a.W, a.b, a.σ
-    y = W * x
-    y .= σ.(y .+ b)
-end
-
 # FLSTM
 
 mutable struct FLSTMCell{A, V}
