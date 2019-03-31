@@ -37,8 +37,7 @@ function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform)
     return cell
 end
 
-function (m::FLSTMCell{<:TrackedArray})(h_, x)
-    h, c = h_ # TODO: nicer syntax on 0.7
+function (m::FLSTMCell{<:TrackedArray})((h, c), x)
     b, o = m.b, size(h, 1)
     g = m.Wi * x +ᵇ m.Wh * h +ᵇ b
     input = pσ.(gate(g, o, 1))
@@ -50,8 +49,8 @@ function (m::FLSTMCell{<:TrackedArray})(h_, x)
     return (h′, c), h′
 end
 
-function (m::FLSTMCell{<:Array})(h_, x)
-    h, c = hBatch(x, h_[1]), hBatch(x, h_[2])
+function (m::FLSTMCell{<:Array})((h, c), x)
+    h, c = hBatch(x, h), hBatch(x, c)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     for j in 1:size(h, 2), i in 1:size(h, 1)
