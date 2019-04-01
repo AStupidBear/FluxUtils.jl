@@ -24,24 +24,23 @@ function rebatch(x, batchsize)
     PermutedDimsArray(xr, [1, 3, 2])
 end
 
-function datagen(x, batchsize, seqsize; partf = part)
+function datagen(x, batchsize, seqsize; partf = part, copy = true, trans = identity)
     x = rebatch(partf(x), batchsize)
     titr = indbatch(1:size(x, 3), seqsize)
     bitr = indbatch(1:size(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         ts, bs = args
-        xs = [gpu(x[:, bs, t]) for t in ts]
-        return xs
+        [trans(view(x, :, bs, t)) for t in ts]
     end
 end
 
-function datagen(x, batchsize; partf = part)
+function datagen(x, batchsize; partf = part, copy = true, trans = identity)
     x = rebatch(partf(x), batchsize)
     titr = 1:size(x, 3)
     bitr = indbatch(1:size(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
         t, bs = args
-        gpu(x[:, bs, t])
+        trans(view(x, :, bs, t))
     end
 end
 
@@ -87,8 +86,8 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     haskey(kws, :epochs) && @unpack epochs = kws
     runopt = haskey(kws, :runopt) ? kws[:runopt] : true
     runopt && @isdefined(MPI) && syncparam!(est)
-    dx = datagen(x, batchsize, seqsize, partf = mpipart)
-    dy = datagen(y, batchsize, seqsize, partf = mpipart)
+    dx = datagen(x, batchsize, seqsize, partf = mpipart, trans = gpu)
+    dy = datagen(y, batchsize, seqsize, partf = mpipart, trans = gpu)
     if w == nothing
         data = zip(dx, dy)
     else
@@ -110,7 +109,7 @@ function predict!(ŷ, est::Estimator, x)
     @unpack batchsize, seqsize = spec
     model = notrack(model)
     fill!(ŷ, 0f0) # in case of partial copy
-    dx = datagen(x, batchsize, partf = identity)
+    dx = datagen(x, batchsize, partf = identity, trans = gpu)
     dy = datagen(ŷ, batchsize, partf = identity)
     for (xi, yi) in zip(dx, dy)
         copyto!(yi, notrack(cpu(model(xi))))
