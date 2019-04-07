@@ -1,4 +1,7 @@
 
+using Flux.Optimise: runall, update!, _update_params!, Params
+using Flux.Tracker: back!, grad
+
 export plog
 
 function plog(str::AbstractString; kws...)
@@ -30,7 +33,6 @@ end
 function Flux.Optimise.train!(m, loss, data, opt; runback = true, 
                         runopt = true, cb = [], desc = "", kws...)
     cb = runall([cugc, cb...])
-    opt = runall(opt)
     l, nb = 0f0, 0
     ∇l = zero(net2vec(m))
     prog = Progress(length(data) + 1, desc = desc)
@@ -43,7 +45,7 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
         l += Flux.data(ln)
         runback && (∇l .+= net2grad(m))
         nb += 1
-        runopt && opt()
+        runopt && _update_params!(opt, params(m))
         Flux.truncate!(m)
         cb()
     end

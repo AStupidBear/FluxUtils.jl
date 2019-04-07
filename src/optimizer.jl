@@ -1,4 +1,4 @@
-using Flux.Optimise: IdDict, Optimiser, WeightDecay
+using Flux.Optimise: IdDict, Optimiser, WeightDecay, ϵ
 import Flux.Optimise: apply!
 
 export ADAMW32
@@ -9,7 +9,7 @@ mutable struct ADAM32
     state::IdDict
 end
 
-ADAM(η = 0.001, β = (0.9, 0.999)) = ADAM(η, β, IdDict())
+ADAM32(η = 0.001, β = (0.9, 0.999)) = ADAM32(η, β, IdDict())
 
 function apply!(o::ADAM32, x, Δ)
     η, β = o.eta, o.beta
