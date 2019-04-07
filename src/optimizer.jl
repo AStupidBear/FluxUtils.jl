@@ -22,4 +22,4 @@ function apply!(o::ADAM32, x, Δ)
 end
 
 ADAMW32(η = 0.001, decay = 0) =
-  Optimiser(ADAM32(η), WeightDecay(decay))
+    Optimiser(ADAM32(η), WeightDecay(decay))
