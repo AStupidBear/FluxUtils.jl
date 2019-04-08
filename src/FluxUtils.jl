@@ -3,7 +3,7 @@ __precompile__(true)
 module FluxUtils
 
 using Printf, LinearAlgebra, Statistics, Distributed, Random
-using Flux, BSON, Requires, ProgressMeter, Parameters, BatchedRoutines
+using Flux, BSON, Requires, ProgressMeter, Parameters
 
 using Flux: glorot_uniform, gate, zeros, ones, stack, unsqueeze, chunk
 using Flux: param, prefor, children, mapleaves, truncate!, loadparams!
