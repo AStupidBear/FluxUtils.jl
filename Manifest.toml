@@ -21,14 +21,6 @@ version = "0.2.3"
 [[Base64]]
 uuid = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
 
-[[BatchedRoutines]]
-deps = ["CUDAapi", "LinearAlgebra", "Pkg"]
-git-tree-sha1 = "b85d8b813240b598fc81c17ee4e34359b2ff26a9"
-repo-rev = "master"
-repo-url = "https://github.com/Roger-luo/BatchedRoutines.jl.git"
-uuid = "8149b2a8-f11c-11e8-306d-59a25846b9b7"
-version = "0.1.0"
-
 [[BinDeps]]
 deps = ["Compat", "Libdl", "SHA", "URIParser"]
 git-tree-sha1 = "12093ca6cdd0ee547c39b1870e0c9c3f154d9ca9"
@@ -46,12 +38,6 @@ deps = ["LibGit2", "Test", "Tokenize"]
 git-tree-sha1 = "437c93bc191cd55957b3f8dee7794b6131997c56"
 uuid = "00ebfdb7-1f24-5e51-bd34-a7502290713f"
 version = "0.5.2"
-
-[[CUDAapi]]
-deps = ["Libdl", "Logging", "Test"]
-git-tree-sha1 = "125122309a4387e0d18787cef0f03800fa57702a"
-uuid = "3895d2a7-ec45-59b8-82bb-cfc6a382f9b3"
-version = "0.6.3"
 
 [[CodecZlib]]
 deps = ["BinaryProvider", "Libdl", "Test", "TranscodingStreams"]
