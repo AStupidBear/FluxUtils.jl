@@ -1,5 +1,4 @@
 using Base: Generator, product
-using Flux: chunk
 
 export part, mpipart, rebatch, datagen, Estimator, TrainSpec, seqloss
 
@@ -50,7 +49,7 @@ Base.fill!(As::Tuple, x) = fill!.(As, x)
 
 Base.copyto!(dests::Tuple, srcs::Tuple) = copyto!.(dests, srcs)
 
-checkdims(xs...) = Flux.prefor(x -> x isa AbstractArray && ndims(x) != 3 && error("ndims should be 3"), xs)
+checkdims(xs...) = prefor(x -> x isa AbstractArray && ndims(x) != 3 && error("ndims should be 3"), xs)
 
 mutable struct Estimator{M, L, O, C}
     model::M
@@ -99,7 +98,7 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     for n in 1:epochs
         desc = nprocs() == 1 ? @sprintf("epoch-%d ", n) :
                 @sprintf("worker-%d,epoch-%d ", myid(), n)
-        l, ∇l = Flux.train!(model, loss, data, opt; desc = desc, kws...)
+        l, ∇l = train!(model, loss, data, opt; desc = desc, kws...)
     end
     return l, ∇l
 end
@@ -124,6 +123,6 @@ function seqloss(loss)
             x, y = xs[t], ys[t]
             l += loss(m(x), y)
         end
-        return l / T
+        return l / Float32(T)
     end
 end

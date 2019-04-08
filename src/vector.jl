@@ -17,7 +17,7 @@ function windices(m, maxnorm = false)
     return inds
 end
 
-parameters_to_vector(ps)::Vector{Float32} = vcat(vec.(Flux.data.(ps))...)
+parameters_to_vector(ps)::Vector{Float32} = vcat(vec.(data.(ps))...)
 
 function vector_to_parameters!(ps, x)
     pos = 1
@@ -28,13 +28,13 @@ function vector_to_parameters!(ps, x)
     end
 end
 
-net2vec(m) = parameters_to_vector(Flux.params(m))
+net2vec(m) = parameters_to_vector(params(m))
 
-vec2net!(m, x) = vector_to_parameters!(Flux.params(m), x)
+vec2net!(m, x) = vector_to_parameters!(params(m), x)
 
-parameters_to_grad(ps)::Vector{Float32} = vcat(vec.(Tracker.grad.(ps))...)
+parameters_to_grad(ps)::Vector{Float32} = vcat(vec.(grad.(ps))...)
 
-net2grad(m) = parameters_to_grad(Flux.params(m))
+net2grad(m) = parameters_to_grad(params(m))
 
 function zerograd!(m)
     for p in params(m)

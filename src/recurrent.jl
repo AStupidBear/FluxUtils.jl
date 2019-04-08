@@ -1,7 +1,3 @@
-using Flux: glorot_uniform, param, gate, Recur, TrackedArray
-using Flux: zeros, ones
-import Flux: hidden
-
 export FLSTM, SGRU, MGU, SMGU, hBatch
 
 hBatch(x::AbstractVector, h::AbstractVector) = h

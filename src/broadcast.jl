@@ -7,11 +7,8 @@ export +ᵇ, -ᵇ, *ᵇ, /ᵇ, ^ᵇ
 ^ᵇ(x, y) = x.^y
 
 using Base.Broadcast: Broadcasted, materialize, broadcasted
-using Flux.Tracker: data, tracker, unbroadcast, track, Call, TrackedStyle, broadcast_rebuild, istracked
-import Flux.Tracker: ∇broadcast
-using MacroTools: postwalk
 
-@inline function ∇broadcast(f::typeof(+), args::Vararg{Any, N}) where {N}
+@inline function Tracker.∇broadcast(f::typeof(+), args::Vararg{Any, N}) where {N}
     y = broadcast(f, data.(args)...)
     eltype(y) <: Real || return y
     eltype(y) == Bool && return y
@@ -24,7 +21,7 @@ using MacroTools: postwalk
     track(Call(back, tracker.(args)), y)
 end
 
-@inline function ∇broadcast(f::typeof(-), args::Vararg{Any, 2})
+@inline function Tracker.∇broadcast(f::typeof(-), args::Vararg{Any, 2})
     y = broadcast(f, data.(args)...)
     eltype(y) <: Real || return y
     eltype(y) == Bool && return y
@@ -37,7 +34,7 @@ end
     track(Call(back, tracker.(args)), y)
 end
 
-@inline function ∇broadcast(f::typeof(*), args::Vararg{Any, 2})
+@inline function Tracker.∇broadcast(f::typeof(*), args::Vararg{Any, 2})
     y = broadcast(f, data.(args)...)
     eltype(y) <: Real || return y
     eltype(y) == Bool && return y
@@ -56,6 +53,7 @@ end
 # So the Calculus approch is disabled by default.
 
 # using Calculus
+# using MacroTools: postwalk
 
 # function bc2ex(bc::Broadcasted, n = Ref(1))
 #     Expr(:call, Symbol(bc.f), [bc2ex(arg, n) for arg in bc.args]...)

@@ -1,7 +1,3 @@
-using Flux: RNNCell, LSTMCell, GRUCell, Recur
-using Flux: children
-using Flux.Tracker: IdSet
-
 export namedparams
 
 namedchildren(x) = [(:nothing, c) for c in children(x)]
@@ -27,7 +23,7 @@ end
 function namedparams(m)
     ps = Any[]
     namedprefor((name, p) ->
-    Tracker.istracked(p) && Tracker.isleaf(p) &&
+        istracked(p) && isleaf(p) &&
         !any(p′ -> p′[2] === p, ps) && push!(ps, (name, p)),
     (Symbol(typename(m)), m))
     return ps
@@ -36,7 +32,7 @@ end
 export states
 function states(m)
     ss = Any[]
-    Flux.prefor(m) do x
+    prefor(m) do x
       x isa Recur || return 
       x.state isa Tuple ? push!(ss, x.state...) : push!(ss, x.state)
     end
@@ -48,14 +44,14 @@ function loadstates!(m, xs)
     for (s, x) in zip(states(m), xs)
     size(s) == size(x) ||
         error("Expected param size $(size(s)), got $(size(x))")
-    copyto!(Flux.data(s), Flux.data(x))
+    copyto!(data(s), data(x))
     end
 end
 
 export weights
 function weights(m)
     ws, seen = [], IdSet()
-    Flux.prefor(m, seen = seen) do w
+    prefor(m, seen = seen) do w
         w isa AbstractArray || return
         push!(seen, w)
         push!(ws, w)

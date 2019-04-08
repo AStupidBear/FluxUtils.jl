@@ -1,18 +1,18 @@
-import Flux.Optimise: update!, apply!
+using MPI: SUM, Comm_size, COMM_WORLD, Allreduce!, Bcast!
 
 export syncparam!
 
 function Flux.Optimise.update!(opt, x, x̄)
-    Δ = Flux.data(x̄)
+    Δ = data(x̄)
     Δ′ = zero(Δ)
-    MPI.Allreduce!(Δ, Δ′, MPI.SUM, MPI.COMM_WORLD)
-    Δ .= Δ′ ./ MPI.Comm_size(MPI.COMM_WORLD)
+    Allreduce!(Δ, Δ′, SUM, COMM_WORLD)
+    Δ .= Δ′ ./ Comm_size(COMM_WORLD)
     update!(x, -apply!(opt, x, Δ))
 end
 
 
 function syncparam!(m)
     v = net2vec(m)
-    MPI.Bcast!(v, 0, MPI.COMM_WORLD)
+    Bcast!(v, 0, COMM_WORLD)
     vec2net!(m, v)
 end

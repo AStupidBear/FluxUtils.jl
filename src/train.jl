@@ -1,7 +1,4 @@
 
-using Flux.Optimise: runall, update!, _update_params!, Params
-using Flux.Tracker: back!, grad
-
 export plog
 
 function plog(str::AbstractString; kws...)
@@ -46,7 +43,7 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
         runback && (∇l .+= net2grad(m))
         nb += 1
         runopt && _update_params!(opt, params(m))
-        Flux.truncate!(m)
+        truncate!(m)
         cb()
     end
     l, ∇l =  l / nb, ∇l ./ nb

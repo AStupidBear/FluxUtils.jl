@@ -1,6 +1,4 @@
-using Flux.Tracker: TrackedArray, track
-
-export cugc, vecnorm2
+export cugc
 
 cugc() = GC.gc(true)
 
@@ -11,9 +9,7 @@ for f in [:vcat, :hcat]
     end
 end
 
-vecnorm2(x::TrackedArray, p::Real = 2) = sum(abs2.(x))
-
-Flux.gpu(x) = Flux.mapleaves(identity, x)
+Flux.gpu(x) = mapleaves(identity, x)
 
 function Flux.Tracker.ngradient(f, xs::AbstractArray...; δ = sqrt(eps()))
     grads = zero.(xs)
@@ -28,3 +24,6 @@ function Flux.Tracker.ngradient(f, xs::AbstractArray...; δ = sqrt(eps()))
     end
     return grads
 end
+
+LinearAlgebra.norm(x::TrackedArray, p::Real = 2) =
+  sum(abs.(x).^p .+ eps(0f0))^(1f0/p) # avoid d(sqrt(x))/dx == Inf at 0
