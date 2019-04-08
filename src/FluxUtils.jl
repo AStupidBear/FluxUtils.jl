@@ -34,7 +34,8 @@ include("bmm.jl")
 
 function __init__()
     @require MPI="da04e1cc-30fd-572f-bb4f-1f8673147195" include("mpi.jl")
-    @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" include("fixcu.jl")
+    @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" include("cufix.jl")
+    @require CuArrays="3a865a2d-5b23-5a0f-bc46-62713ec82fae" include("cubmm.jl")
 end
 
 end
