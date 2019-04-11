@@ -1,4 +1,14 @@
-export ADAMW32
+export Clip, ADAMW32
+
+mutable struct Clip
+    thresh::Float32
+end
+
+function Flux.Optimise.apply!(o::Clip, x, Δ)
+    θ = o.thresh
+    @. Δ = clamp(Δ, -θ, θ)
+    return Δ
+end
 
 mutable struct ADAM32
     eta::Float32
@@ -18,5 +28,5 @@ function Flux.Optimise.apply!(o::ADAM32, x, Δ)
     return Δ
 end
 
-ADAMW32(η = 0.001, decay = 0) =
-    Optimiser(ADAM32(η), WeightDecay(decay))
+ADAMW32(η = 0.001, decay = 1f-3, θ = 0.5f0) =
+    Optimiser(Clip(θ), ADAM32(η), WeightDecay(decay))
