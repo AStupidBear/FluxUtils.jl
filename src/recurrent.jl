@@ -1,9 +1,9 @@
 export FLSTM, SGRU, MGU, SMGU, hBatch
 
 hBatch(x::AbstractVector, h::AbstractVector) = h
-hBatch(x::AbstractMatrix, h::AbstractVector{T}) where T = repeat(h, 1, size(x, 2))
+hBatch(x::AbstractMatrix, h::AbstractVector{T}) where T = repeat(h, outer = (1, size(x, 2)))
 hBatch(x::AbstractMatrix, h::AbstractMatrix{T}) where T =
-    size(h, 2) == size(x, 2) ? h : repeat(h[:, 1], 1, size(x, 2))
+    size(h, 2) == size(x, 2) ? h : repeat(h[:, 1], outer = (1, size(x, 2)))
 
 # FLSTM
 
