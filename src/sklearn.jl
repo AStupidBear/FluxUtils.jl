@@ -96,8 +96,8 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     haskey(kws, :epochs) && @unpack epochs = kws
     runopt = haskey(kws, :runopt) ? kws[:runopt] : true
     runopt && @isdefined(MPI) && syncparam!(est)
-    dx = datagen(x, batchsize, seqsize, partf = mpipart, trans = gpu)
-    dy = datagen(y, batchsize, seqsize, partf = mpipart, trans = gpu)
+    dx = datagen(x, batchsize, seqsize, partf = mpipart, trans = gpu ∘ copy)
+    dy = datagen(y, batchsize, seqsize, partf = mpipart, trans = gpu ∘ copy)
     if w == nothing
         data = zip(dx, dy)
     else
