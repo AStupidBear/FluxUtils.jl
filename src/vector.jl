@@ -23,7 +23,7 @@ function vector_to_parameters!(ps, x)
     pos = 1
     for p in ps
         pos_end = pos + length(p) - 1
-        copyto!(p.data, x[pos:pos_end])
+        copyto!(vec(p.data), x[pos:pos_end])
         pos = pos_end + 1
     end
 end
