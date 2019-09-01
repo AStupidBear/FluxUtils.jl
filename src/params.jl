@@ -1,5 +1,10 @@
 export namedparams
 
+function typename(x::T) where T
+    name, ext = splitext(string(T.name))
+    isempty(ext) ? name : ext[2:end]
+end
+
 namedchildren(x) = [(:nothing, c) for c in children(x)]
 
 namedchildren(m::Union{Dense, Flux.Diagonal, LayerNorm, Conv, RNNCell, LSTMCell, GRUCell}) = zip(fieldnames(typeof(m)), children(m))
