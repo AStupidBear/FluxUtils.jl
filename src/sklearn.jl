@@ -119,7 +119,7 @@ function predict!(ŷ, est::Estimator, x)
     @unpack batchsize, seqsize = spec
     model = notrack(model)
     fill!(ŷ, 0f0) # in case of partial copy
-    dx = datagen(x, batchsize, partf = identity, trans = gpu)
+    dx = datagen(x, batchsize, partf = identity, trans = gpu ∘ copy)
     dy = datagen(ŷ, batchsize, partf = identity)
     for (xi, yi) in zip(dx, dy)
         copyto!(yi, notrack(cpu(model(xi))))
