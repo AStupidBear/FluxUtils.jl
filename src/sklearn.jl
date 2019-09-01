@@ -12,7 +12,18 @@ end
 
 mpipart(x) = part(x, myid(), nprocs())
 
-function rebatch(x, batchsize)
+function rebatch(x::AbstractMatrix, batchsize)
+    nb, nt = size(x, 1), size(x, 2)
+    n = batchsize ÷ nb
+    (n <= 1 || nt <= n) && return x
+    nt′, nb′ = nt ÷ n, nb * n
+    xt = view(x, :, 1:(nt′ * n))
+    xp = PermutedDimsArray(xt, [2, 1])
+    xr = reshape(xp, nt′, nb′)
+    PermutedDimsArray(xr, [2, 1])
+end
+
+function rebatch(x::AbstractArray{T, 3}, batchsize) where T
     nb, nt = size(x, 2), size(x, 3)
     n = batchsize ÷ nb
     (n <= 1 || nt <= n) && return x
@@ -23,7 +34,7 @@ function rebatch(x, batchsize)
     PermutedDimsArray(xr, [1, 3, 2])
 end
 
-function datagen(x, batchsize, seqsize; partf = part, copy = true, trans = identity)
+function datagen(x, batchsize, seqsize; partf = part, trans = identity)
     x = rebatch(partf(x), batchsize)
     titr = indbatch(1:size(x, 3), seqsize)
     bitr = indbatch(1:size(x, 2), batchsize)
@@ -33,7 +44,7 @@ function datagen(x, batchsize, seqsize; partf = part, copy = true, trans = ident
     end
 end
 
-function datagen(x, batchsize; partf = part, copy = true, trans = identity)
+function datagen(x, batchsize; partf = part, trans = identity)
     x = rebatch(partf(x), batchsize)
     titr = 1:size(x, 3)
     bitr = indbatch(1:size(x, 2), batchsize)
