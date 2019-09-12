@@ -1,4 +1,4 @@
-export FLSTM, SGRU, MGU, SMGU, hBatch
+export FLSTM, SGRU, MGU, SMGU, HFGRU, hBatch
 
 hBatch(x::AbstractVector, h::AbstractVector) = h
 hBatch(x::AbstractMatrix, h::AbstractVector{T}) where T = repeat(h, outer = (1, size(x, 2)))
@@ -197,6 +197,39 @@ Base.show(io::IO, l::SMGUCell) =
 SMGU(a...; ka...) = Recur(SMGUCell(a...; ka...))
 
 namedchildren(m::Union{FLSTMCell, SGRUCell, MGUCell, SMGUCell}) = zip(fieldnames(typeof(m)), children(m))
+
+# HFGRU: High Frequency GRU
+
+mutable struct HFGRUCell{A,V}
+    Wi::A
+    Wh::A
+    b::V
+    h::V
+    α::Float32
+end
+
+HFGRUCell(in, out; init = glorot_uniform, α = 1f0) =
+    HFGRUCell(init(out * 3, in), init(out * 3, out),
+          init(out * 3), zeros(out), α)
+
+function (m::HFGRUCell)(h, x)
+    b, o, α = m.b, size(h, 1), m.α
+    gx, gh = m.Wi * x, m.Wh * h
+    r = σ.(gate(gx, o, 1) .+ gate(gh, o, 1) .+ gate(b, o, 1))
+    z = α .* σ.(gate(gx, o, 2) .+ gate(gh, o, 2) .+ gate(b, o, 2))
+    h̃ = tanh.(gate(gx, o, 3) .+ r .* gate(gh, o, 3) .+ gate(b, o, 3))
+    h′ = z .* h̃ .+ (1 .- z) .* h
+    return h′, h′
+end
+
+hidden(m::HFGRUCell) = m.h
+
+@treelike HFGRUCell
+
+Base.show(io::IO, l::HFGRUCell) =
+    print(io, "HFGRUCell(", size(l.Wi, 2), ", ", size(l.Wi, 1) ÷ 3, ")")
+
+HFGRU(a...; ka...) = Recur(HFGRUCell(a...; ka...))
 
 # using Flux: data
 # using Flux.Tracker: track, @grad
