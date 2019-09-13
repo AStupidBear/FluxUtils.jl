@@ -18,17 +18,17 @@ end
 
 # GaussianNoise
 mutable struct GaussianNoise{F}
-  stddev::F
-  active::Bool
+    stddev::F
+    active::Bool
 end
 
 GaussianNoise(stddev) = GaussianNoise(stddev, true)
 
 function (a::GaussianNoise)(x)
-  a.active || return x
-  a.stddev == 0 && return x
-  y = lmul!(a.stddev, randn!(similar(x)))
-  return x .+ y
+    a.active || return x
+    a.stddev == 0 && return x
+    y = lmul!(a.stddev, randn!(similar(x)))
+    return x .+ y
 end
 
 Flux._testmode!(a::GaussianNoise, test) = (a.active = !test)
