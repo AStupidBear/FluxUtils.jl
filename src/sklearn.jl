@@ -13,24 +13,24 @@ end
 mpipart(x) = part(x, myid(), nprocs())
 
 function rebatch(x::AbstractMatrix, batchsize)
-    nb, nt = size(x, 1), size(x, 2)
-    n = batchsize ÷ nb
-    (n <= 1 || nt <= n) && return x
-    nt′, nb′ = nt ÷ n, nb * n
-    xt = view(x, :, 1:(nt′ * n))
-    xp = PermutedDimsArray(xt, [2, 1])
-    xr = reshape(xp, nt′, nb′)
+    N, T = size(x, 1), size(x, 2)
+    n = batchsize ÷ N
+    (n <= 1 || T <= n) && return x
+    T′, N′ = T ÷ n, N * n
+    xv = view(x, :, 1:(T′ * n))
+    xp = PermutedDimsArray(xv, [2, 1])
+    xr = reshape(xp, T′, N′)
     PermutedDimsArray(xr, [2, 1])
 end
 
 function rebatch(x::AbstractArray{T, 3}, batchsize) where T
-    nb, nt = size(x, 2), size(x, 3)
-    n = batchsize ÷ nb
-    (n <= 1 || nt <= n) && return x
-    nt′, nb′ = nt ÷ n, nb * n
-    xt = view(x, :, :, 1:(nt′ * n))
-    xp = PermutedDimsArray(xt, [1, 3, 2])
-    xr = reshape(xp, :, nt′, nb′)
+    N, T = size(x, 2), size(x, 3)
+    n = batchsize ÷ N
+    (n <= 1 || T <= n) && return x
+    T′, N′ = T ÷ n, N * n
+    xv = view(x, :, :, 1:(T′ * n))
+    xp = PermutedDimsArray(xv, [1, 3, 2])
+    xr = reshape(xp, :, T′, N′)
     PermutedDimsArray(xr, [1, 3, 2])
 end
 
