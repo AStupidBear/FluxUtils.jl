@@ -23,7 +23,7 @@ function rebatch(x::AbstractMatrix, batchsize)
     PermutedDimsArray(xr, [2, 1])
 end
 
-function rebatch(x::AbstractArray{T, 3}, batchsize) where T
+function rebatch(x::AbstractArray{<:Any, 3}, batchsize)
     N, T = size(x, 2), size(x, 3)
     n = batchsize ÷ N
     (n <= 1 || T <= n) && return x
