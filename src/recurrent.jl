@@ -1,3 +1,4 @@
+# TODO: recurrent dropout
 export FLSTM, SGRU, MGU, SMGU, HFGRU, hBatch
 
 hBatch(x::AbstractVector, h::AbstractVector) = h
