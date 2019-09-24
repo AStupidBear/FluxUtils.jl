@@ -5,6 +5,9 @@ hBatch(x::AbstractMatrix, h::AbstractVector{T}) where T = repeat(h, outer = (1, 
 hBatch(x::AbstractMatrix, h::AbstractMatrix{T}) where T =
     size(h, 2) == size(x, 2) ? h : repeat(h[:, 1], outer = (1, size(x, 2)))
 
+orthogonal(dim) = qr(randn(Float32, dim, dim)).Q
+orthogonal(dim1, dim2) = vcat([orthogonal(dim2) for n in 1:(dim1 ÷ dim2)]...)
+
 # FLSTM
 
 mutable struct FLSTMCell{A, V}
@@ -15,9 +18,9 @@ mutable struct FLSTMCell{A, V}
     c::V
 end
 
-function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform)
-    cell = FLSTMCell(param(init(4out, in)), param(init(4out, out)), param(init(4out)),
-                    param(zeros(out)), param(zeros(out)))
+function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform, kernel_init = orthogonal)
+    cell = FLSTMCell(param(init(4out, in)), param(kernel_init(4out, out)), 
+                    param(init(4out)), param(zeros(out)), param(zeros(out)))
     cell.b.data[gate(out, 2)] .= 1
     return cell
 end
@@ -74,9 +77,8 @@ mutable struct SGRUCell{A, V}
     h::V
 end
 
-SGRUCell(in, out; init = glorot_uniform) =
-    SGRUCell(param(init(out, in)), param(init(3out, out)),
-            param(zeros(3out)), param(zeros(out)))
+SGRUCell(in, out; init = glorot_uniform, kernel_init = orthogonal)) =
+    SGRUCell(param(init(out, in)), param(kernel_init(3out, out)), param(zeros(3out)), param(zeros(out)))
 
 function (m::SGRUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
@@ -119,9 +121,8 @@ mutable struct MGUCell{A, V}
     h::V
 end
 
-MGUCell(in, out; init = glorot_uniform) =
-    MGUCell(param(init(2out, in)), param(init(2out, out)),
-            param(zeros(2out)), param(zeros(out)))
+MGUCell(in, out; init = glorot_uniform, kernel_init = orthogonal) =
+    MGUCell(param(init(2out, in)), param(kernel_init(2out, out)), param(zeros(2out)), param(zeros(out)))
 
 function (m::MGUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
@@ -162,9 +163,8 @@ mutable struct SMGUCell{A, V}
     h::V
 end
 
-SMGUCell(in, out; init = glorot_uniform) =
-    SMGUCell(param(init(out, in)), param(init(2out, out)),
-            param(zeros(2out)), param(zeros(out)))
+SMGUCell(in, out; init = glorot_uniform, kernel_init = orthogonal) =
+    SMGUCell(param(init(out, in)), param(kernel_init(2out, out)), param(zeros(2out)), param(zeros(out)))
 
 function (m::SMGUCell{<:TrackedArray})(h, x)
     b, o = m.b, size(h, 1)
@@ -208,9 +208,8 @@ mutable struct HFGRUCell{A,V}
     α::Float32
 end
 
-HFGRUCell(in, out; init = glorot_uniform, α = 1f0) =
-    HFGRUCell(init(out * 3, in), init(out * 3, out),
-          init(out * 3), zeros(out), α)
+HFGRUCell(in, out; init = glorot_uniform, kernel_init = orthogonal, α = 1f0) =
+    HFGRUCell(init(out * 3, in), kernel_init(out * 3, out), init(out * 3), zeros(out), α)
 
 function (m::HFGRUCell)(h, x)
     b, o, α = m.b, size(h, 1), m.α
