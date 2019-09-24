@@ -77,7 +77,7 @@ mutable struct SGRUCell{A, V}
     h::V
 end
 
-SGRUCell(in, out; init = glorot_uniform, kernel_init = orthogonal)) =
+SGRUCell(in, out; init = glorot_uniform, kernel_init = orthogonal) =
     SGRUCell(param(init(out, in)), param(kernel_init(3out, out)), param(zeros(3out)), param(zeros(out)))
 
 function (m::SGRUCell{<:TrackedArray})(h, x)
