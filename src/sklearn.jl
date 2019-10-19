@@ -2,13 +2,22 @@ using Base: Generator, product
 
 export part, mpipart, rebatch, datagen, Estimator, TrainSpec, seqloss
 
-function part(x, n = myid() - 1, N = nworkers(); dim = ndims(x))
+function part(x::AbstractArray, n = myid() - 1, N = nworkers(); dim = 0)
+    nd = ndims(x)
+    dim = dim > 0 ? dim :
+          dim < 0 ? nd + 1 - dim :
+          size(x, nd - 1) > 5 * size(x, nd) ?
+          nd - 1 : nd
     (n < 1 || size(x)[dim] < N) && return x
     is = chunk(1:size(x, dim), N)
     i = UnitRange(extrema(is[n])...)
     inds = ntuple(x -> x == dim ? i : (:), ndims(x))
     view(x, inds...)
 end
+
+fieldvalues(x) = [getfield(x, s) for s in fieldnames(typeof(x))]
+
+part(obj, T) = T([isa(x, AbstractArray) ? part(x) : x for x in fieldvalues(x)])
 
 mpipart(x) = part(x, myid(), nprocs())
 
