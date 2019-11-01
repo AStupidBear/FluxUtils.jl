@@ -10,7 +10,6 @@ function Flux.Optimise.update!(opt, x, x̄)
     update!(x, -apply!(opt, x, Δ))
 end
 
-
 function syncparam!(m)
     v = net2vec(m)
     Bcast!(v, 0, COMM_WORLD)
