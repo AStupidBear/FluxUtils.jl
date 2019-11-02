@@ -33,6 +33,7 @@ A = rand(2, 3) |> gpu
 B = Flux.onehotbatch([:b, :a], [:a, :b, :c]) |> gpu
 @test A * B == A * Array(B) 
 
+using Pkg
 if "MPI" in keys(Pkg.installed())
     using MPI: mpiexec
     julia = joinpath(Sys.BINDIR, Base.julia_exename())
