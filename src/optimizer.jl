@@ -1,12 +1,23 @@
-export Clip, ADAMW32
+export Clip, ClipNorm, ADAMW32
 
 mutable struct Clip
     thresh::Float32
 end
 
 function Flux.Optimise.apply!(o::Clip, x, Δ)
-    θ = o.thresh
-    @. Δ = clamp(Δ, -θ, θ)
+    Δ .= clamp.(Δ, -o.thresh, o.thresh)
+    return Δ
+end
+
+mutable struct ClipNorm
+    thresh::Float32
+end
+
+function Flux.Optimise.apply!(o::ClipNorm, x, Δ)
+    nrm = norm(Δ)
+    if nrm > o.thresh
+        rmul!(Δ, o.thresh / nrm)
+    end
     return Δ
 end
 

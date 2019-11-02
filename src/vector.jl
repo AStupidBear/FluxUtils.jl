@@ -1,4 +1,4 @@
-export windices, net2vec, vec2net!, net2grad, zerograd!, clipnorm!
+export windices, net2vec, vec2net!, net2grad
 
 function windices(m, maxnorm = false)
     pos, inds = 0, Vector{Int}[]
@@ -35,17 +35,3 @@ vec2net!(m, x) = vector_to_parameters!(params(m), x)
 parameters_to_grad(ps)::Vector{Float32} = vcat(vec.(grad.(ps))...)
 
 net2grad(m) = parameters_to_grad(params(m))
-
-function zerograd!(m)
-    for p in params(m)
-        p.grad .= 0f0
-    end
-end
-
-function clipnorm!(Δ, thresh)
-    nrm = norm(Δ)
-    if nrm > thresh
-        rmul!(Δ, thresh / nrm)
-    end
-    return Δ
-end
