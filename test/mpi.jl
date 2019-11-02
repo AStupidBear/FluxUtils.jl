@@ -19,7 +19,7 @@ est = Estimator(model, loss, opt, spec)
 
 man = MCM.start_main_loop(MCM.MPI_TRANSPORT_ALL)
 
-@mpi_do man fit!(est, x, y)
+MCM.@mpi_do man fit!(est, x, y)
 
 ŷ = fill!(similar(y), 0)
 predict!(ŷ, est, x)
