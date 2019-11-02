@@ -4,7 +4,7 @@ using Random, Statistics
 using Flux, FluxUtils
 using FluxUtils: fit!, predict!
 
-using MPIClusterManagers
+using MPI, MPIClusterManagers
 const MCM = MPIClusterManagers
 
 F, N, T = 10, 1000, 1000

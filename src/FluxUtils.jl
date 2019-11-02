@@ -3,7 +3,7 @@ __precompile__(true)
 module FluxUtils
 
 using Printf, LinearAlgebra, Statistics, Distributed, Random
-using Flux, BSON, ProgressMeter, Parameters, MPI
+using Flux, BSON, ProgressMeter, Parameters, Requires
 
 using Flux: glorot_uniform, gate, zeros, ones, stack, unsqueeze, chunk
 using Flux: param, prefor, children, mapleaves, truncate!, loadparams!
@@ -28,9 +28,12 @@ include("broadcast.jl")
 include("train.jl")
 include("optimizer.jl")
 include("bmm.jl")
-include("mpi.jl")
 if isdefined(Flux, :CuArrays)
     include("cuda.jl")
+end
+
+function __init__()
+    @require MPI="da04e1cc-30fd-572f-bb4f-1f8673147195" include("mpi.jl")
 end
 
 end
