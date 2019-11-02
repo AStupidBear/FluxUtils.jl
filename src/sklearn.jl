@@ -1,6 +1,6 @@
 using Base: Generator, product
 
-export part, mpipart, rebatch, datagen, Estimator, TrainSpec, seqloss
+export part, mpipart, rebatch, datagen, Estimator, seqloss
 
 function part(x::AbstractArray, n = myid() - 1, N = nworkers(); dim = 0)
     nd = ndims(x)
@@ -92,12 +92,6 @@ function Base.show(io::IO, est::Estimator)
 end
 
 @treelike Estimator
-
-@with_kw mutable struct TrainSpec
-    epochs::Int = 1
-    batchsize::Int = 100
-    seqsize::Int = 1000
-end
 
 function fit!(est::Estimator, x, y, w = nothing; kws...)
     @unpack model, loss, opt, spec = est
