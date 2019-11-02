@@ -79,7 +79,7 @@ end
 
 ### Distributed Training with MPI
 
-Distributed training can be achived with MPI with just a couple lines of code needed to be added. `fit!` internally will intercept `Flux`'s parameter updating step, apply `Allreduce` to average gradients from diffrent processes, then continue the updating. It will also synchronize parameters by broadcasting parameters from rank 0 to the rest before backpropagation starts. 
+Distributed training can be achived with MPI with just a couple lines of code needed to be added. `fit!` internally will intercept `Flux`'s parameter updating step, apply `Allreduce` to average gradients from diffrent processes, then continue the updating. It will also synchronize parameters by broadcasting parameters from rank 0 to the rest before backpropagation starts.
 
 ```jl
 using MPI
@@ -94,7 +94,7 @@ end
 
 ### Dealing with Big Data
 
-Because data is only lazily subsliced in the training process, you can use memory mapping to read large datasets. `HDF5.jl` is recommended for this kind of usage. The function `h5concat` in [HDF5Utils.jl](https://github.com/AStupidBear/HDF5Utils.jl) can help you concatenate a large amount of files into a single file efficiently.
+Because data is only lazily subsliced in the training process, you can use memory mapping to read large datasets. [HDF5.jl](https://github.com/JuliaIO/HDF5.jl) is recommended for this kind of usage. The function `h5concat` in [HDF5Utils.jl](https://github.com/AStupidBear/HDF5Utils.jl) can help you concatenate a large amount of files into a single file efficiently.
 
 
 ```julia
