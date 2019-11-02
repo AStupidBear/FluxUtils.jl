@@ -9,6 +9,11 @@ pkg"add FluxUtils"
 
 ## Usage
 
+```julia
+using Flux, FluxUtils
+using FluxUtils: fit!, predict!
+```
+
 ### Sklearn Interface for Time Series Prediction
 
 First, define a simple LSTM network model.
@@ -81,16 +86,22 @@ end
 
 Distributed training can be achived with MPI with just a couple lines of code needed to be added. `fit!` internally will intercept `Flux`'s parameter updating step, apply `Allreduce` to average gradients from diffrent processes, then continue the updating. It will also synchronize parameters by broadcasting parameters from rank 0 to the rest before backpropagation starts.
 
-```jl
-using MPI
-man = MPIManager(np = 4)
-addprocs(man)
-@mpi_do man begin
-    # ... code to load data
-    # ... code to define est
-    fit!(est, x, y)
-end
+If you want to train on NVIDIA GPUs, make sure you have built MPI with CUDA support (see [link](https://www.open-mpi.org/faq/?category=buildcuda)).
+
+A template may be like this (run with `mpirun -np 4 julia *`)
+
+```julia
+# ... code to load data
+# ... code to define est
+using MPIClusterManagers
+const MCM = MPIClusterManagers
+man = MCM.start_main_loop(MCM.MPI_TRANSPORT_ALL)
+@mpi_do man fit!(est, x, y)
+# ... code to predict
+MCM.stop_main_loop(man)
 ```
+
+The complete example is located at `test/mpi.jl`.
 
 ### Dealing with Big Data
 
@@ -151,6 +162,12 @@ load states `s` back into model `m`
 
 ```julia
 loadstates!(m, s)
+```
+
+get all weights of a model (without biases), useful for regularization
+
+```julia
+weights(m)
 ```
 
 batch matrix-matrix product (can be differentiated)

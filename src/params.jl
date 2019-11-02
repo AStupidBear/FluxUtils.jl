@@ -1,4 +1,4 @@
-export namedparams
+export namedparams, states, loadstates!, weights, namedweights
 
 function typename(x::T) where T
     name, ext = splitext(string(T.name))
@@ -34,7 +34,6 @@ function namedparams(m)
     return ps
 end
 
-export states
 function states(m)
     ss = Any[]
     prefor(m) do x
@@ -44,7 +43,6 @@ function states(m)
     return ss
 end
 
-export loadstates!
 function loadstates!(m, xs)
     for (s, x) in zip(states(m), xs)
     size(s) == size(x) ||
@@ -53,7 +51,6 @@ function loadstates!(m, xs)
     end
 end
 
-export weights
 function weights(m)
     ws, seen = [], IdSet()
     prefor(m, seen = seen) do w
@@ -64,7 +61,6 @@ function weights(m)
     return ws
 end
 
-export namedweights
 function namedweights(m)
     ws, seen = [], IdSet()
     mname = Symbol(typename(m))

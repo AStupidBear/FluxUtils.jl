@@ -93,14 +93,16 @@ end
 
 @treelike Estimator
 
+adaptor(m) = x -> Flux.adapt(typeof(data(first(params(m)))), x)
+
 function fit!(est::Estimator, x, y, w = nothing; kws...)
     @unpack model, loss, opt, spec = est
     @unpack epochs, batchsize, seqsize = spec
     haskey(kws, :epochs) && @unpack epochs = kws
     runopt = haskey(kws, :runopt) ? kws[:runopt] : true
     runopt && @isdefined(MPI) && syncparam!(est)
-    dx = datagen(x, batchsize, seqsize, partf = mpipart, trans = gpu ∘ copy)
-    dy = datagen(y, batchsize, seqsize, partf = mpipart, trans = gpu ∘ copy)
+    dx = datagen(x, batchsize, seqsize, partf = mpipart, trans = adaptor(est) ∘ copy)
+    dy = datagen(y, batchsize, seqsize, partf = mpipart, trans = adaptor(est) ∘ copy)
     if w == nothing
         data = zip(dx, dy)
     else
@@ -122,7 +124,7 @@ function predict!(ŷ, est::Estimator, x)
     @unpack batchsize, seqsize = spec
     model = notrack(model)
     fill!(ŷ, 0f0) # in case of partial copy
-    dx = datagen(x, batchsize, partf = identity, trans = gpu ∘ copy)
+    dx = datagen(x, batchsize, partf = identity, trans = adaptor(est) ∘ copy)
     dy = datagen(ŷ, batchsize, partf = identity)
     for (xi, yi) in zip(dx, dy)
         copyto!(yi, notrack(cpu(model(xi))))

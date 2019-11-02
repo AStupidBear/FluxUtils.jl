@@ -15,20 +15,18 @@ Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
 [compat]
 BSON = "0.2.4"
-CuArrays = "1.2"
 Flux = "0.9"
 MPI = "0.10"
-Parameters = "1"
+Parameters = "0.12"
 ProgressMeter = "1"
-Requires = "0.5"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+MPIClusterManagers = "e7922434-ae4b-11e9-05c5-9780451d2c66"
 
 [targets]
-test = ["Test"]
+test = ["Test", "MPIClusterManagers"]

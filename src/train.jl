@@ -42,7 +42,10 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
         l += Flux.data(ln)
         runback && (∇l .+= net2grad(m))
         nb += 1
-        runopt && _update_params!(opt, params(m))
+        runopt && for x in params(m)
+            update!(opt, x, Tracker.grad(x))
+            x.tracker.grad = Tracker.zero_grad!(x.tracker.grad)
+        end
         truncate!(m)
         cb()
     end
