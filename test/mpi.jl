@@ -1,10 +1,10 @@
 using Test
-
-using Random, Statistics
-using Flux, FluxUtils
+using Statistics
+using Flux
+using FluxUtils
 using FluxUtils: fit!, predict!
 
-using MPI, MPIClusterManagers
+using MPIClusterManagers
 const MCM = MPIClusterManagers
 
 F, N, T = 10, 1000, 1000
@@ -19,7 +19,7 @@ est = Estimator(model, loss, opt, spec)
 
 man = MCM.start_main_loop(MCM.MPI_TRANSPORT_ALL)
 
-MCM.@mpi_do man fit!(est, x, y)
+@mpi_do man fit!(est, x, y)
 
 ŷ = fill!(similar(y), 0)
 predict!(ŷ, est, x)
