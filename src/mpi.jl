@@ -1,4 +1,4 @@
-using MPI: SUM, Comm_size, COMM_WORLD, Allreduce!, Bcast!
+using .MPI: SUM, Comm_size, COMM_WORLD, Allreduce!, Bcast!
 
 export syncparam!
 
