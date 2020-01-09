@@ -17,7 +17,7 @@ spec = (epochs = 10, batchsize = 100, seqsize = 100)
 opt = ADAMW32(1f-3)
 est = Estimator(model, loss, opt, spec)
 
-man = MCM.start_main_loop(MCM.MPI_TRANSPORT_ALL)
+man = MCM.start_main_loop(MPI_TRANSPORT_ALL)
 
 @mpi_do man fit!(est, x, y)
 

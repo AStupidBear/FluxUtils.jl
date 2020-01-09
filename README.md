@@ -95,7 +95,7 @@ A template may be like this (run with `mpirun -np 4 julia *`)
 # ... code to define est
 using MPIClusterManagers
 const MCM = MPIClusterManagers
-man = MCM.start_main_loop(MCM.MPI_TRANSPORT_ALL)
+man = MCM.start_main_loop(MPI_TRANSPORT_ALL)
 @mpi_do man fit!(est, x, y)
 # ... code to predict
 MCM.stop_main_loop(man)
