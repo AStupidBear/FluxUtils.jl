@@ -1,6 +1,3 @@
-
-export plog
-
 function plog(str::AbstractString; kws...)
     str = @sprintf("worker: %d, %s\n", myid(), str)
     printstyled(str; kws...)

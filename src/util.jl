@@ -3,7 +3,7 @@ export notrack, cugc
 function cugc()
     GC.gc()
     isdefined(Flux, :CuArrays) &&
-    Flux.CuArrays.reclaim(true)
+    Flux.CuArrays.BinnedPool.reclaim(true)
 end
 
 function notrack(m)
@@ -12,7 +12,7 @@ function notrack(m)
     keep[] ? m : mapleaves(data, m)
 end
 
-# TODO: remove this once using the zygote branch is released
+# TODO: remove this once the zygote branch is released
 if !isdefined(Flux, :Zygote)
     function Flux.Optimise.apply!(o::WeightDecay, x, Δ)
         wd = o.wd

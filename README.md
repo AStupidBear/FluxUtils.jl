@@ -91,14 +91,13 @@ If you want to train on NVIDIA GPUs, make sure you have built MPI with CUDA supp
 A template may be like this (run with `mpirun -np 4 julia *`)
 
 ```julia
+using MPI
+MPI.Init()
 # ... code to load data
 # ... code to define est
-using MPIClusterManagers
-const MCM = MPIClusterManagers
-man = MCM.start_main_loop(MPI_TRANSPORT_ALL)
-@mpi_do man fit!(est, x, y)
+fit!(est, x, y)
 # ... code to predict
-MCM.stop_main_loop(man)
+MPI.Finalize()
 ```
 
 The complete example is located at `test/mpi.jl`.

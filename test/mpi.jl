@@ -1,13 +1,11 @@
-using Test
-using Statistics
-using Flux
-using FluxUtils
+using Statistics, Random, Test
+using Flux, FluxUtils, MPI
 using FluxUtils: fit!, predict!
 
-using MPIClusterManagers
-const MCM = MPIClusterManagers
+MPI.Init()
 
 F, N, T = 10, 1000, 1000
+Random.seed!(1234)
 x = randn(Float32, F, N, T)
 y = mean(x, dims = 1)
 
@@ -17,12 +15,10 @@ spec = (epochs = 10, batchsize = 100, seqsize = 100)
 opt = ADAMW32(1f-3)
 est = Estimator(model, loss, opt, spec)
 
-man = MCM.start_main_loop(MPI_TRANSPORT_ALL)
-
-@mpi_do man fit!(est, x, y)
+fit!(est, x, y)
 
 ŷ = fill!(similar(y), 0)
 predict!(ŷ, est, x)
 @test Flux.mse(y, ŷ) < 0.01
 
-MCM.stop_main_loop(man)
+MPI.Finalize()

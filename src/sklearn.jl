@@ -1,25 +1,31 @@
 using Base: Generator, product
 
-export part, mpipart, rebatch, datagen, Estimator, seqloss
+export rebatch, datagen, Estimator, seqloss
 
-function part(x::AbstractArray, n = myid() - 1, N = nworkers(); dim = 0)
+function part(x::AbstractArray, n, N; dims = 0)
     nd = ndims(x)
-    dim = dim > 0 ? dim :
-          dim < 0 ? nd + 1 - dim :
+    dims = dims > 0 ? dims :
+          dims < 0 ? nd + 1 - dims :
           size(x, nd - 1) > 5 * size(x, nd) ?
           nd - 1 : nd
-    (n < 1 || size(x)[dim] < N) && return x
-    is = chunk(1:size(x, dim), N)
+    size(x)[dims] < N && return x
+    is = chunk(1:size(x, dims), N)
     i = UnitRange(extrema(is[n])...)
-    inds = ntuple(x -> x == dim ? i : (:), ndims(x))
+    inds = ntuple(x -> x == dims ? i : (:), ndims(x))
     view(x, inds...)
+end
+
+function part(x; dims = 0)
+    if @isdefined(MPI) && MPI.Initialized()
+        part(x, myrank() + 1, nhosts())
+    else
+        return x
+    end
 end
 
 fieldvalues(x) = [getfield(x, s) for s in fieldnames(typeof(x))]
 
 part(obj, T) = T([isa(x, AbstractArray) ? part(x) : x for x in fieldvalues(x)])
-
-mpipart(x) = part(x, myid(), nprocs())
 
 function rebatch(x::AbstractMatrix, batchsize)
     N, T = size(x, 1), size(x, 2)
@@ -101,19 +107,19 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     haskey(kws, :epochs) && @unpack epochs = kws
     runopt = haskey(kws, :runopt) ? kws[:runopt] : true
     runopt && @isdefined(MPI) && syncparam!(est)
-    dx = datagen(x, batchsize, seqsize, partf = mpipart, trans = adaptor(est) ∘ copy)
-    dy = datagen(y, batchsize, seqsize, partf = mpipart, trans = adaptor(est) ∘ copy)
+    dx = datagen(x, batchsize, seqsize, partf = part, trans = adaptor(est) ∘ copy)
+    dy = datagen(y, batchsize, seqsize, partf = part, trans = adaptor(est) ∘ copy)
     if w == nothing
         data = zip(dx, dy)
     else
         rmul!(w, 1 / mean(w))
-        dw = datagen(w, batchsize, seqsize, partf = mpipart)
+        dw = datagen(w, batchsize, seqsize, partf = part)
         data = zip(dx, dy, dw)
     end
     local l, ∇l
     for n in 1:epochs
-        desc = nprocs() == 1 ? @sprintf("epoch-%d ", n) :
-                @sprintf("worker-%d,epoch-%d ", myid(), n)
+        desc = !@isdefined(MPI) ? @sprintf("epoch-%d ", n) :
+                @sprintf("rank-%d,epoch-%d ", myrank(), n)
         l, ∇l = train!(model, loss, data, opt; desc = desc, kws...)
     end
     return l, ∇l

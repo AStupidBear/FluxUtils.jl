@@ -1,13 +1,13 @@
-using .MPI: SUM, Comm_size, COMM_WORLD, Allreduce!, Bcast!
+myrank() = MPI.Comm_rank(MPI.COMM_WORLD)
 
-export syncparam!
+nhosts() = MPI.Comm_size(MPI.COMM_WORLD)
 
 function Flux.Optimise.update!(opt, x, x̄)
     Δ = data(x̄)
     if MPI.Initialized()
         Δ′ = zero(Δ)
-        Allreduce!(Δ, Δ′, SUM, COMM_WORLD)
-        Δ .= Δ′ ./ Comm_size(COMM_WORLD)
+        MPI.Allreduce!(Δ, Δ′, MPI.SUM, MPI.COMM_WORLD)
+        Δ .= Δ′ ./ nhosts()
     end
     update!(x, -apply!(opt, x, Δ))
 end
@@ -15,7 +15,7 @@ end
 function syncparam!(m)
     if MPI.Initialized()
         v = net2vec(m)
-        Bcast!(v, 0, COMM_WORLD)
+        MPI.Bcast!(v, 0, MPI.COMM_WORLD)
         vec2net!(m, v)
     end
 end

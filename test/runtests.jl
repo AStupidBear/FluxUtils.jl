@@ -1,5 +1,5 @@
-using Random, Statistics
-using Flux, FluxUtils, Test
+using Statistics, Test
+using Flux, FluxUtils
 using FluxUtils: fit!, predict!
 
 F, N, T = 10, 1000, 1000
@@ -31,7 +31,7 @@ bmm(A, B)
 
 A = rand(2, 3) |> gpu
 B = Flux.onehotbatch([:b, :a], [:a, :b, :c]) |> gpu
-@test A * B == A * Array(B) 
+@test A * B == A * Array(B)
 
 using Pkg
 if "MPI" in keys(Pkg.installed())
