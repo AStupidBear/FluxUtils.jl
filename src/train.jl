@@ -32,7 +32,7 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
     prog = Progress(length(data) + 1, desc = desc)
     for (n, dn) in enumerate(data)
         ln = loss(m, dn...)
-        next!(prog, showvalues = [(:loss, trunc4(ln.data))])
+        runopt && next!(prog, showvalues = [(:loss, trunc4(ln.data))])
         isinf(ln) && error("Loss is Inf")
         isnan(ln) && error("Loss is NaN")
         runback && @interrupts back!(ln)
@@ -47,6 +47,6 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
         cb()
     end
     l, ∇l =  l / nb, ∇l ./ nb
-    next!(prog, showvalues = [(:avgloss, trunc4(l))])
+    runopt && next!(prog, showvalues = [(:avgloss, trunc4(l))])
     return l, ∇l
 end
