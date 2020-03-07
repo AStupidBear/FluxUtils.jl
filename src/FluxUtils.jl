@@ -6,7 +6,7 @@ using Printf, LinearAlgebra, Statistics, Distributed, Random
 using Flux, BSON, ProgressMeter, Parameters, Requires
 
 using Flux: glorot_uniform, gate, zeros, ones, stack, unsqueeze, chunk
-using Flux: param, prefor, children, mapleaves, truncate!, loadparams!
+using Flux: param, prefor, children, mapleaves, truncate!, reset!, loadparams!
 using Flux: RNNCell, LSTMCell, GRUCell, Recur, OneHotMatrix, OneHotVector
 import Flux: hidden, @treelike
 

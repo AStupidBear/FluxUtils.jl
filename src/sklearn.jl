@@ -49,8 +49,8 @@ function rebatch(x::AbstractArray{<:Any, 3}, batchsize)
     PermutedDimsArray(xr, [1, 3, 2])
 end
 
-function datagen(x, batchsize, seqsize; partf = part, trans = identity)
-    x = rebatch(partf(x), batchsize)
+function datagen(x, batchsize, seqsize; partf = part, trans = identity, cb = identity)
+    x = cb(rebatch(partf(x), batchsize))
     titr = indbatch(1:size(x, 3), seqsize)
     bitr = indbatch(1:size(x, 2), batchsize)
     Generator(product(titr, bitr)) do args
@@ -109,6 +109,8 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     runopt && @isdefined(MPI) && syncparam!(est)
     dx = datagen(x, batchsize, seqsize, partf = part, trans = adaptor(est) ∘ copy)
     dy = datagen(y, batchsize, seqsize, partf = part, trans = adaptor(est) ∘ copy)
+    seqend = datagen(fill(false, 1, size(x)[2:end]...), batchsize, seqsize, 
+                    cb = z -> (z[:, :, end] .= true; z))
     if w == nothing
         data = zip(dx, dy)
     else
@@ -120,7 +122,7 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     for n in 1:epochs
         desc = !@isdefined(MPI) ? @sprintf("epoch-%d ", n) :
                 @sprintf("rank-%d,epoch-%d ", myrank(), n)
-        l, ∇l = train!(model, loss, data, opt; desc = desc, kws...)
+        l, ∇l = train!(model, loss, data, opt, seqend; desc = desc, kws...)
     end
     return l, ∇l
 end

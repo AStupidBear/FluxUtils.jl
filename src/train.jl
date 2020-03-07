@@ -24,13 +24,13 @@ else
     using Flux.Optimise: @interrupts
 end
 
-function Flux.Optimise.train!(m, loss, data, opt; runback = true, 
+function Flux.Optimise.train!(m, loss, data, opt, seqend; runback = true, 
                         runopt = true, cb = [], desc = "", kws...)
     cb = runall([cugc, cb...])
     l, nb = 0f0, 0
     ∇l = zero(net2vec(m))
     prog = Progress(length(data) + 1, desc = desc)
-    for (n, dn) in enumerate(data)
+    for (n, (dn, se)) in enumerate(zip(data, seqend))
         ln = loss(m, dn...)
         runopt && next!(prog, showvalues = [(:loss, trunc4(ln.data))])
         isinf(ln) && error("Loss is Inf")
@@ -43,7 +43,7 @@ function Flux.Optimise.train!(m, loss, data, opt; runback = true,
             update!(opt, x, Tracker.grad(x))
             x.tracker.grad = Tracker.zero_grad!(x.tracker.grad)
         end
-        truncate!(m)
+        any(se[end]) ? reset!(m) : truncate!(m)
         cb()
     end
     l, ∇l =  l / nb, ∇l ./ nb
