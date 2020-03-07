@@ -127,13 +127,14 @@ function fit!(est::Estimator, x, y, w = nothing; kws...)
     return l, ∇l
 end
 
-function predict!(ŷ, est::Estimator, x)
+function predict!(ŷ, est::Estimator, x; reset = true)
     @unpack model, spec = est
     @unpack batchsize, seqsize = spec
     model = notrack(model)
     fill!(ŷ, 0f0) # in case of partial copy
     dx = datagen(x, batchsize, partf = identity, trans = adaptor(est) ∘ copy)
     dy = datagen(ŷ, batchsize, partf = identity)
+    reset && reset!(model)
     for (xi, yi) in zip(dx, dy)
         copyto!(yi, notrack(cpu(model(xi))))
     end
