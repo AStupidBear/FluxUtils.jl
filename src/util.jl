@@ -3,7 +3,7 @@ export notrack, cugc
 function cugc()
     GC.gc()
     isdefined(Flux, :CuArrays) &&
-    Flux.CuArrays.reclaim(true)
+    Flux.CuArrays.BinnedPool.reclaim()
 end
 
 function notrack(m)
