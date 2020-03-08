@@ -11,17 +11,14 @@ function plog(nt::NamedTuple; kws...)
     plog(join(strs, ", "); kws...)
 end
 
-@static if VERSION >= v"1.0"
-    using Flux.Optimise: StopException
-    macro interrupts(ex)
+using Flux.Optimise: StopException
+
+macro interrupts(ex)
     :(try $(esc(ex))
         catch e
         e isa StopException || rethrow()
         throw(e)
         end)
-    end
-else
-    using Flux.Optimise: @interrupts
 end
 
 function Flux.Optimise.train!(m, loss, data, opt, seqend; runback = true, 

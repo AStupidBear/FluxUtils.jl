@@ -31,7 +31,8 @@ function (a::GaussianNoise)(x)
     return x .+ y
 end
 
-Flux._testmode!(a::GaussianNoise, test) = (a.active = !test)
+testmode!(a::GaussianNoise, test) = 
+    (m.active = (isnothing(mode) || mode == :auto) ? nothing : !mode; m)
 
 # WinsorNorm
 mutable struct WinsorNorm

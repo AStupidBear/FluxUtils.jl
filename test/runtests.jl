@@ -27,7 +27,6 @@ loadstates!(est, s)
 weights(est)
 A = zeros(10, 2, 10) |> gpu
 B = zeros(2, 3, 10) |> gpu
-bmm(A, B)
 
 A = rand(2, 3) |> gpu
 B = Flux.onehotbatch([:b, :a], [:a, :b, :c]) |> gpu

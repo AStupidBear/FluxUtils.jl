@@ -1,4 +1,5 @@
-export notrack, cugc
+export notrack, cugc, *ᶜ
+export +ᵇ, -ᵇ, *ᵇ, /ᵇ, ^ᵇ
 
 function cugc()
     GC.gc()
@@ -12,10 +13,15 @@ function notrack(m)
     keep[] ? m : mapleaves(data, m)
 end
 
-# TODO: remove this once the zygote branch is released
-if !isdefined(Flux, :Zygote)
-    function Flux.Optimise.apply!(o::WeightDecay, x, Δ)
-        wd = o.wd
-        Δ .+= wd .* data(x)
-    end
+function *ᶜ(A, B) # tensor contraction
+    Ar = reshape(A, :, size(A, ndims(A)))
+    Br = reshape(B, size(B, 1), :)
+    dims = (size(A)[1:end-1]..., size(B)[2:end]...)
+    C = reshape(Ar * Br, dims...)
 end
+
++ᵇ(xs...) = broadcast(+, xs...)
+-ᵇ(x, y) = x .- y
+*ᵇ(x, y) = x .* y
+/ᵇ(xs...) = x ./ y
+^ᵇ(x, y) = x.^y

@@ -26,7 +26,7 @@ function FLSTMCell(in::Integer, out::Integer; init = glorot_uniform, kernel_init
     return cell
 end
 
-function (m::FLSTMCell{<:TrackedArray})((h, c), x)
+function (m::FLSTMCell)((h, c), x)
     b, o = m.b, size(h, 1)
     g = m.Wi * x +ᵇ m.Wh * h +ᵇ b
     input = pσ.(gate(g, o, 1))
@@ -81,7 +81,7 @@ end
 SGRUCell(in, out; init = glorot_uniform, kernel_init = orthogonal) =
     SGRUCell(param(init(out, in)), param(kernel_init(3out, out)), param(zeros(3out)), param(zeros(out)))
 
-function (m::SGRUCell{<:TrackedArray})(h, x)
+function (m::SGRUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     r = pσ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))
@@ -125,7 +125,7 @@ end
 MGUCell(in, out; init = glorot_uniform, kernel_init = orthogonal) =
     MGUCell(param(init(2out, in)), param(kernel_init(2out, out)), param(zeros(2out)), param(zeros(out)))
 
-function (m::MGUCell{<:TrackedArray})(h, x)
+function (m::MGUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     r = z = pσ.(gate(gx, o, 1) +ᵇ gate(gh, o, 1) +ᵇ gate(b, o, 1))
@@ -167,7 +167,7 @@ end
 SMGUCell(in, out; init = glorot_uniform, kernel_init = orthogonal) =
     SMGUCell(param(init(out, in)), param(kernel_init(2out, out)), param(zeros(2out)), param(zeros(out)))
 
-function (m::SMGUCell{<:TrackedArray})(h, x)
+function (m::SMGUCell)(h, x)
     b, o = m.b, size(h, 1)
     gx, gh = m.Wi * x, m.Wh * h
     r = z = pσ.(gate(gh, o, 1) +ᵇ gate(b, o, 1))

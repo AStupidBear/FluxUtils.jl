@@ -168,9 +168,3 @@ get all weights of a model (without biases), useful for regularization
 ```julia
 weights(m)
 ```
-
-batch matrix-matrix product (can be differentiated)
-
-```julia
-bmm(A, B)
-```
